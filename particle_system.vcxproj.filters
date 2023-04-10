@@ -19,4 +19,20 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="kernel.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kernel.cl">
+      <Filter>Fichiers de ressources</Filter>
+    </None>
+    <None Include="example_particle.cl">
+      <Filter>Fichiers de ressources</Filter>
+    </None>
+    <None Include="particle.cl">
+      <Filter>Fichiers de ressources</Filter>
+    </None>
+  </ItemGroup>
 </Project>
