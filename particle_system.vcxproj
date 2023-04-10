@@ -130,7 +130,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="kernel.hpp" />
+    <ClInclude Include="utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel.cl" />

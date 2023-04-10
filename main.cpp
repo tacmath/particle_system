@@ -2,7 +2,7 @@
 #include <CL/opencl.hpp>
 #include <vector>
 #include <iostream>
-#include "kernel.hpp"
+#include "utils.hpp"
 /*
 
 
@@ -184,6 +184,9 @@ glutSwapBuffers( );
 glFlush( );
 */
 
+;
+
+
 int main() {
 	std::vector<cl::Platform> platforms;
 	std::vector<cl::Device> devices;
@@ -203,40 +206,36 @@ int main() {
 		std::cout << "Version : " << device.getInfo<CL_DEVICE_VERSION>() << "\n";
 	}
 
-	cl::Context context({ devices.front() });
+	cl::Device device = devices.front();
+
+	cl::Context context(device);
 
 	int A_h[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 	int B_h[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+	int C_h[10];
 
-	cl::Buffer A_d(context, CL_MEM_READ_WRITE, sizeof(A_h));
-	cl::Buffer B_d(context, CL_MEM_READ_WRITE, sizeof(B_h));
+	cl::Buffer A_d(context, CL_MEM_READ_ONLY, sizeof(A_h));
+	cl::Buffer B_d(context, CL_MEM_READ_ONLY, sizeof(B_h));
+	cl::Buffer C_d(context, CL_MEM_WRITE_ONLY, sizeof(C_h));
 
-	cl::CommandQueue queue(context, devices.front());
+	cl::Program program;
 
+	program = utils::BuildProgram(context, device, {"kernel.cl"});
+
+	cl::CommandQueue queue(context, device);
 	queue.enqueueWriteBuffer(A_d, CL_TRUE, 0, sizeof(A_h), A_h);
 	queue.enqueueWriteBuffer(B_d, CL_TRUE, 0, sizeof(B_h), B_h);
 
-	std::string kernel_code =
-		"   void kernel simple_add(global const int* A, global const int* B, global int* C){ "
-		"       C[get_global_id(0)]=A[get_global_id(0)]+B[get_global_id(0)];                 "
-		"   } ";
 
-	cl::Program::Sources sources;
-	sources.push_back({ kernel_code.c_str(),kernel_code.length() });
+	cl::compatibility::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer> vector_add(cl::Kernel(program, "vector_add"));
+	cl::EnqueueArgs eargs(queue, cl::NullRange, cl::NDRange(10), cl::NullRange);
+	vector_add(eargs, A_d, B_d, C_d).wait();
 
-	cl::Program program(context, sources);
-	if (program.build({ devices.front() }) != CL_SUCCESS) {
-		std::cout << " Error building: " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices.front()) << "\n";
-		exit(1);
-	}
+	queue.enqueueReadBuffer(C_d, CL_TRUE, 0, sizeof(C_h), C_h);
 
-	Kernel kernel, kernel2, k3;
 
-	kernel.Build(context, devices.front(), {"kernel.cl"});
-
-	kernel2.Build(context, devices.front(), { "particle.cl" });
-
-	k3.Build(context, devices.front(), { "example_partile.cl" });
+	for (auto nb : C_h)
+		std::cout << nb << std::endl;
 
 	return 0;
 }
