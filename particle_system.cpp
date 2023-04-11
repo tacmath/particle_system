@@ -48,9 +48,11 @@ void ParticleSystem::InitCl()
 
 	const cl_context_properties context_properties[] =
 	{
+		#ifdef _WIN32
 		CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
 		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
 		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
+		#endif
 		0
 	};
 
@@ -66,7 +68,7 @@ void ParticleSystem::RunCl()
 	int B_h[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 2 };
 	int C_h[10];
 
-	int D_h = 9;
+	int D_h = 2;
 
 	cl::Buffer A_d(clContext, CL_MEM_READ_ONLY, sizeof(A_h));
 	cl::Buffer B_d(clContext, CL_MEM_READ_ONLY, sizeof(B_h));
@@ -104,15 +106,52 @@ void ParticleSystem::InitGl()
 		-0.1f, 0.1f, 0.0f,
 		-0.1f, -0.1f, 0.0f,
 		0.3f, 0.1f, 0.0f,
-		0.5f, 0.1f, 0.0f
+		0.5f, -0.1f, 0.0f
 	};
 
 	vao.Gen();
 	vbo.Gen(data, sizeof(data));
-	vao.LinkAttrib(vbo, 0, 8, GL_FLOAT, sizeof(float) * 3, 0);
-//	shader.Load("", "");
+	vao.LinkAttrib(vbo, 0, 3, GL_FLOAT, sizeof(float), 0);
+	shader.Load("particleVS.glsl", "particleFS.glsl");
+	shader.Activate();
+	vao.Bind();
+	glFinish();
+}
+
+static void showFPS(GLFWwindow* window) {
+	static double oldTime = 0;
+	static double newTime;
+	static int frames = 0;
+	static char title[60];
+	double timeDiff;
+
+	newTime = glfwGetTime();
+	timeDiff = newTime - oldTime;
+	frames++;
+	if (timeDiff < 1.0f / 30.0f)
+		return;
+	sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	glfwSetWindowTitle(window, title);
+	frames = 0;
+	oldTime = newTime;
 }
 
 void ParticleSystem::RunGl()
 {
+	isRunning = true;
+	//glfwSwapInterval(0);
+	while (isRunning) {
+		glfwPollEvents();
+		if (glfwWindowShouldClose(window.context) == 1 || glfwGetKey(window.context, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			isRunning = false;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glDrawArrays(GL_POINTS, 0, 8);
+
+		showFPS(window.context);
+
+		glfwSwapBuffers(window.context);
+		glFinish();
+	}
 }

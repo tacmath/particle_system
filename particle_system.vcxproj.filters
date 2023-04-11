@@ -64,5 +64,11 @@
     <None Include="particle.cl">
       <Filter>Fichiers de ressources</Filter>
     </None>
+    <None Include="particleFS.glsl">
+      <Filter>Fichiers de ressources</Filter>
+    </None>
+    <None Include="particleVS.glsl">
+      <Filter>Fichiers de ressources</Filter>
+    </None>
   </ItemGroup>
 </Project>

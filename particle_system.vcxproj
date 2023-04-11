@@ -152,6 +152,8 @@
     <None Include="kernel.cl" />
     <None Include="example_particle.cl" />
     <None Include="particle.cl" />
+    <None Include="particleFS.glsl" />
+    <None Include="particleVS.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

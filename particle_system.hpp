@@ -33,6 +33,9 @@ class ParticleSystem {
 	VBO		vbo;
 	Shader	shader;
 
+	//other
+	bool isRunning = false;
+
 public:
 	void Start();
 	void Run();
