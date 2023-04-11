@@ -9,6 +9,14 @@ void VBO::Gen(const void* data, size_t size) {
     glNamedBufferData(ID, size, data, GL_STATIC_DRAW);
 }
 
+void* VBO::Map(GLenum access) {
+    return glMapNamedBuffer(ID, access);
+}
+
+void VBO::Unmap() {
+    glUnmapNamedBuffer(ID);
+}
+
 void VBO::Delete() {
     glDeleteBuffers(1, &ID);
 }

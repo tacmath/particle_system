@@ -14,7 +14,7 @@
 #include "VBO.h"
 #include "shader.h"
 
-#define MAX_PARTICLE 8
+#define NB_PARTICLE 8
 
 
 typedef cl::compatibility::make_kernel<cl::Buffer, cl::Buffer> ComputeParticle;
@@ -27,10 +27,14 @@ class ParticleSystem {
 	cl::Device			device;
 	cl::Context			clContext;
 	cl::CommandQueue	clQueue;
+	cl::BufferGL		posBuffer;
+	cl::Buffer			velBuffer;
+	cl::Kernel			kernel;
+	std::vector<cl::Memory> glBuffers;
 
 	//opengl
 	VAO		vao;
-	VBO		vbo;
+	VBO		particlesPos;
 	Shader	shader;
 
 	//other
@@ -42,8 +46,8 @@ public:
 	void Stop();
 private:
 	void InitCl();
+	void CreateKernel();
 	void RunCl();
 
 	void InitGl();
-	void RunGl();
 };

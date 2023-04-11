@@ -2,16 +2,49 @@
 #include "utils.hpp"
 
 
+static void showFPS(GLFWwindow* window) {
+	static double oldTime = 0;
+	static double newTime;
+	static int frames = 0;
+	static char title[60];
+	double timeDiff;
+
+	newTime = glfwGetTime();
+	timeDiff = newTime - oldTime;
+	frames++;
+	if (timeDiff < 1.0f / 30.0f)
+		return;
+	sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	glfwSetWindowTitle(window, title);
+	frames = 0;
+	oldTime = newTime;
+}
+
 void ParticleSystem::Start()
 {
 	InitCl();
 	InitGl();
+	CreateKernel();
 }
 
 void ParticleSystem::Run()
 {
-	RunCl();
-	RunGl();
+	isRunning = true;
+//	glfwSwapInterval(0);
+	while (isRunning) {
+		glfwPollEvents();
+		if (glfwWindowShouldClose(window.context) == 1 || glfwGetKey(window.context, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			isRunning = false;
+
+		RunCl();
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDrawArrays(GL_POINTS, 0, 8);
+
+		showFPS(window.context);
+
+		glfwSwapBuffers(window.context);
+	}
 }
 
 void ParticleSystem::Stop()
@@ -61,48 +94,40 @@ void ParticleSystem::InitCl()
 
 	clContext = cl::Context(device, context_properties);
 	clQueue = cl::CommandQueue(clContext, device);
+}
 
+void ParticleSystem::CreateKernel()
+{
+	cl_int err;
+	cl::Program program = utils::BuildProgram(clContext, device, { "particle.cl" });
+	kernel = cl::Kernel(program, "Particle", &err);
+	_ASSERT(err == CL_SUCCESS);
 
+	velBuffer = cl::Buffer(clContext, CL_MEM_READ_WRITE, 3 * sizeof(float) * NB_PARTICLE);
+	posBuffer = cl::BufferGL(clContext, CL_MEM_READ_WRITE, particlesPos.ID);
+	kernel.setArg(0, posBuffer);
+	kernel.setArg(1, velBuffer);
+
+	glBuffers.push_back(posBuffer);
+
+	//clQueue.enqueueWriteBuffer(velBuffer, CL_FALSE, 0, 3 * sizeof(float) * NB_PARTICLE, 0);
 }
 
 void ParticleSystem::RunCl()
 {
-	int A_h[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	int B_h[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 2 };
-	int C_h[10];
+	glFinish();
 
-	int D_h = 2;
-
-	cl::Buffer A_d(clContext, CL_MEM_READ_ONLY, sizeof(A_h));
-	cl::Buffer B_d(clContext, CL_MEM_READ_ONLY, sizeof(B_h));
-	cl::Buffer D_d(clContext, CL_MEM_READ_ONLY, sizeof(D_h));
-	cl::Buffer C_d(clContext, CL_MEM_WRITE_ONLY, sizeof(C_h));
-
-	cl::Program program;
-
+	clQueue.enqueueAcquireGLObjects(&glBuffers);
 	
+	clQueue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(NB_PARTICLE), cl::NullRange);
+	
+	clQueue.enqueueReleaseGLObjects(&glBuffers);
 
-	program = utils::BuildProgram(clContext, device, { "kernel.cl" });
-	cl::compatibility::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer> vector_add(cl::Kernel(program, "vector_add"));
-
-	cl::EnqueueArgs eargs(clQueue, cl::NullRange, cl::NDRange(10), cl::NullRange);
-	clQueue.enqueueWriteBuffer(A_d, CL_TRUE, 0, sizeof(A_h), A_h);
-	clQueue.enqueueWriteBuffer(B_d, CL_TRUE, 0, sizeof(B_h), B_h);
-	clQueue.enqueueWriteBuffer(D_d, CL_TRUE, 0, sizeof(D_h), &D_h);
-
-	vector_add(eargs, A_d, B_d, C_d, D_d).wait();
-
-	clQueue.enqueueReadBuffer(C_d, CL_TRUE, 0, sizeof(C_h), C_h);
-
-
-	for (auto nb : C_h)
-		std::cout << nb << std::endl;
+	clQueue.finish();
 }
 
 void ParticleSystem::InitGl()
 {
-
-	GLuint pbuff, vbuff;
 
 	const float data[] = {
 		0.0f, 0.1f, 0.0f,
@@ -114,59 +139,18 @@ void ParticleSystem::InitGl()
 		0.3f, 0.1f, 0.0f,
 		0.5f, -0.1f, 0.0f
 	};
-
-	glGenBuffers(1, &pbuff);
-	glBindBuffer(GL_ARRAY_BUFFER, pbuff);
-	glBufferData(GL_ARRAY_BUFFER, 3 * 8 * sizeof(float), NULL, GL_STATIC_DRAW);
 	
-	glGenBuffers(1, &vbuff);
-	glBindBuffer(GL_ARRAY_BUFFER, vbuff);
-	glBufferData(GL_ARRAY_BUFFER, 3 * 8 * sizeof(float), NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	particlesPos.Gen(0, sizeof(data));
+
+	float* gldata = (float*)particlesPos.Map(GL_WRITE_ONLY);
+	for (int n = 0; n < 24; n++)
+		gldata[n] = data[n];
+	particlesPos.Unmap();
 
 	vao.Gen();
-	vbo.Gen(data, sizeof(data));
-	vao.LinkAttrib(vbo, 0, 3, GL_FLOAT, sizeof(float), 0);
+	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(float), 0);
 	shader.Load("particleVS.glsl", "particleFS.glsl");
 	shader.Activate();
 	vao.Bind();
 	glFinish();
-}
-
-static void showFPS(GLFWwindow* window) {
-	static double oldTime = 0;
-	static double newTime;
-	static int frames = 0;
-	static char title[60];
-	double timeDiff;
-
-	newTime = glfwGetTime();
-	timeDiff = newTime - oldTime;
-	frames++;
-	if (timeDiff < 1.0f / 30.0f)
-		return;
-	sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
-	glfwSetWindowTitle(window, title);
-	frames = 0;
-	oldTime = newTime;
-}
-
-void ParticleSystem::RunGl()
-{
-	isRunning = true;
-	//glfwSwapInterval(0);
-	while (isRunning) {
-		glfwPollEvents();
-		if (glfwWindowShouldClose(window.context) == 1 || glfwGetKey(window.context, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-			isRunning = false;
-
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		glDrawArrays(GL_POINTS, 0, 8);
-
-		showFPS(window.context);
-
-		glfwSwapBuffers(window.context);
-		glFinish();
-	}
 }

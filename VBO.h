@@ -12,6 +12,8 @@ public:
     VBO() = default;
     VBO(const void* data, size_t size);
     void Gen(const void* data, size_t size);
+    void* Map(GLenum access);
+    void Unmap();
     void Delete();
 };
 
