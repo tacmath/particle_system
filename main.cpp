@@ -1,43 +1,8 @@
-#define CL_HPP_TARGET_OPENCL_VERSION 300
-#include <CL/opencl.hpp>
-#include <vector>
-#include <iostream>
-#include "utils.hpp"
+#include "particle_system.hpp"
+//#include "utils.hpp"
 /*
 
 
- IsCLExtensionSupported( "cl_khr_gl_sharing" )
-
-bool IsCLExtensionSupported(const char* extension)
-{
-	// see if the extension is bogus:
-	if (extension == NULL || extension[0] == '\0')
-		return false;
-	char* where = (char*)strchr(extension, ' ');
-	if (where != NULL)
-		return false;
-	// get the full list of extensions:
-	size_t extensionSize;
-	clGetDeviceInfo(Device, CL_DEVICE_EXTENSIONS, 0, NULL, &extensionSize);
-	char* extensions = new char[extensionSize];
-	clGetDeviceInfo(Device, CL_DEVICE_EXTENSIONS, extensionSize, extensions, NULL);
-	for (char* start = extensions; ; )
-	{
-		where = (char*)strstr((const char*)start, extension);
-		if (where == 0)
-		{
-			delete[] extensions;
-			return false;
-		}
-		char* terminator = where + strlen(extension); // points to what should be the separator
-		if (*terminator == ' ' || *terminator == '\0' || *terminator == '\r' || *terminator == '\n')
-		{
-			delete[] extensions;
-			return true;
-		}
-		start = terminator;
-	}
-}
 
 For Windows :
 cl_context_properties props[] =
@@ -188,54 +153,11 @@ glFlush( );
 
 
 int main() {
-	std::vector<cl::Platform> platforms;
-	std::vector<cl::Device> devices;
-	cl::Platform::get(&platforms);
+	ParticleSystem particleSystem;
 
-	_ASSERT(platforms.size() > 0);
-	cl::Platform platform = platforms.front();
-
-	std::cout << "Using platform: " << platform.getInfo<CL_PLATFORM_NAME>() << "\n";
-	platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-	
-	_ASSERT(devices.size() > 0);
-
-	for (auto& device : devices) {
-		std::cout << "Using device: " << device.getInfo<CL_DEVICE_NAME>() << "\n";
-		std::cout << "Vendor : " << device.getInfo<CL_DEVICE_VENDOR>() << "\n";
-		std::cout << "Version : " << device.getInfo<CL_DEVICE_VERSION>() << "\n";
-	}
-
-	cl::Device device = devices.front();
-
-	cl::Context context(device);
-
-	int A_h[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	int B_h[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-	int C_h[10];
-
-	cl::Buffer A_d(context, CL_MEM_READ_ONLY, sizeof(A_h));
-	cl::Buffer B_d(context, CL_MEM_READ_ONLY, sizeof(B_h));
-	cl::Buffer C_d(context, CL_MEM_WRITE_ONLY, sizeof(C_h));
-
-	cl::Program program;
-
-	program = utils::BuildProgram(context, device, {"kernel.cl"});
-
-	cl::CommandQueue queue(context, device);
-	queue.enqueueWriteBuffer(A_d, CL_TRUE, 0, sizeof(A_h), A_h);
-	queue.enqueueWriteBuffer(B_d, CL_TRUE, 0, sizeof(B_h), B_h);
-
-
-	cl::compatibility::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer> vector_add(cl::Kernel(program, "vector_add"));
-	cl::EnqueueArgs eargs(queue, cl::NullRange, cl::NDRange(10), cl::NullRange);
-	vector_add(eargs, A_d, B_d, C_d).wait();
-
-	queue.enqueueReadBuffer(C_d, CL_TRUE, 0, sizeof(C_h), C_h);
-
-
-	for (auto nb : C_h)
-		std::cout << nb << std::endl;
+	particleSystem.Start();
+	particleSystem.Run();
+	particleSystem.Stop();
 
 	return 0;
 }

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
 #include <CL/opencl.hpp>
 #include <vector>
 #include <string>
@@ -30,4 +32,14 @@ namespace utils {
 		}
 		return program;
 	}
+
+	bool IsCLExtensionSupported(const cl::Device& device, const char* extension)
+	{
+		if (extension == 0 || extension[0] == '\0')
+			return false;
+		cl::string extentions = device.getInfo<CL_DEVICE_EXTENSIONS>();
+		return extentions.find(extension) != cl::string::npos;
+	}
 };
+
+#endif // !UTILS_HPP
