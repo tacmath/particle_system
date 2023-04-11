@@ -14,7 +14,7 @@
 #include "VBO.h"
 #include "shader.h"
 
-#define MAX_PARTICLE 100
+#define MAX_PARTICLE 8
 
 
 typedef cl::compatibility::make_kernel<cl::Buffer, cl::Buffer> ComputeParticle;

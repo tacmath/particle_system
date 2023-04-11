@@ -51,8 +51,11 @@ void ParticleSystem::InitCl()
 		#ifdef _WIN32
 		CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
 		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
-		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
+		#else
+		CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+		CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
 		#endif
+		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
 		0
 	};
 
@@ -98,6 +101,9 @@ void ParticleSystem::RunCl()
 
 void ParticleSystem::InitGl()
 {
+
+	GLuint pbuff, vbuff;
+
 	const float data[] = {
 		0.0f, 0.1f, 0.0f,
 		0.1f, 0.1f, 0.0f,
@@ -108,6 +114,15 @@ void ParticleSystem::InitGl()
 		0.3f, 0.1f, 0.0f,
 		0.5f, -0.1f, 0.0f
 	};
+
+	glGenBuffers(1, &pbuff);
+	glBindBuffer(GL_ARRAY_BUFFER, pbuff);
+	glBufferData(GL_ARRAY_BUFFER, 3 * 8 * sizeof(float), NULL, GL_STATIC_DRAW);
+	
+	glGenBuffers(1, &vbuff);
+	glBindBuffer(GL_ARRAY_BUFFER, vbuff);
+	glBufferData(GL_ARRAY_BUFFER, 3 * 8 * sizeof(float), NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	vao.Gen();
 	vbo.Gen(data, sizeof(data));
