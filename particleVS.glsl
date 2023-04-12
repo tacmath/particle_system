@@ -1,9 +1,19 @@
 #version 400
 layout (location = 0) in vec3 aPos;
 
-uniform mat4 MVP;
+out vec3 color;
+
+uniform mat4 VP;
+
+uniform vec3 center = vec3(0);
+
+uniform vec3 centerColor = vec3(1);
+
+uniform vec3 baseColor = vec3(1, 0, 0);
 
 void main()
 {   
-    gl_Position = vec4(aPos, 1.0f);
+    gl_Position = VP * vec4(aPos, 1.0f);
+    float ratio = clamp(length(center - aPos), 0, 1); //or smoothstep(0, 1, length(center - aPos))
+    color = baseColor * ratio + (1 - ratio) * centerColor;
 }

@@ -5,7 +5,7 @@
 #include<fstream>
 #include<iostream>
 #include <streambuf>
-//#include<glm/gtc/type_ptr.hpp>
+#include<glm/gtc/type_ptr.hpp>
 #include<vector>
 #include<string>
 
@@ -32,7 +32,7 @@ public:
         glDeleteProgram(ID);
         ID = 0;
     }
-    /*
+    
     void setMat4(const char* name, const glm::mat4& matrix) {
         glProgramUniformMatrix4fv(ID, glGetUniformLocation(ID, name), 1, GL_FALSE, &matrix[0][0]);
     }
@@ -41,7 +41,7 @@ public:
     }
     void setVec3(const char* name, const glm::vec3& vector) {
         glProgramUniform3fv(ID, glGetUniformLocation(ID, name), 1, &vector[0]);
-    }*/
+    }
     void setVec3(const char* name, float x, float y, float z) {
         glProgramUniform3f(ID, glGetUniformLocation(ID, name), x, y, z);
     }

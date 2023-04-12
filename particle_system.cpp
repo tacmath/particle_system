@@ -1,5 +1,4 @@
 #include "particle_system.hpp"
-#include "utils.hpp"
 
 
 static void showFPS(GLFWwindow* window) {
@@ -30,16 +29,16 @@ void ParticleSystem::Start()
 void ParticleSystem::Run()
 {
 	isRunning = true;
-//	glfwSwapInterval(0);
+	glfwSwapInterval(0);
 	while (isRunning) {
 		glfwPollEvents();
 		if (glfwWindowShouldClose(window.context) == 1 || glfwGetKey(window.context, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			isRunning = false;
 
-		RunCl();
+		ComputeParticles();
 
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDrawArrays(GL_POINTS, 0, 8);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawArrays(GL_POINTS, 0, NB_PARTICLE);
 
 		showFPS(window.context);
 
@@ -108,49 +107,48 @@ void ParticleSystem::CreateKernel()
 	kernel.setArg(0, posBuffer);
 	kernel.setArg(1, velBuffer);
 
-	glBuffers.push_back(posBuffer);
+	GLObjects.push_back(posBuffer);
 
 	//clQueue.enqueueWriteBuffer(velBuffer, CL_FALSE, 0, 3 * sizeof(float) * NB_PARTICLE, 0);
 }
 
-void ParticleSystem::RunCl()
+void ParticleSystem::ComputeParticles()
 {
 	glFinish();
 
-	clQueue.enqueueAcquireGLObjects(&glBuffers);
+	clQueue.enqueueAcquireGLObjects(&GLObjects);
 	
 	clQueue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(NB_PARTICLE), cl::NullRange);
 	
-	clQueue.enqueueReleaseGLObjects(&glBuffers);
+	clQueue.enqueueReleaseGLObjects(&GLObjects);
 
 	clQueue.finish();
 }
 
 void ParticleSystem::InitGl()
 {
+	glm::mat4 P, V;
 
-	const float data[] = {
-		0.0f, 0.1f, 0.0f,
-		0.1f, 0.1f, 0.0f,
-		0.2f, 0.1f, 0.0f,
-		0.0f, -0.1f, 0.0f,
-		-0.1f, 0.1f, 0.0f,
-		-0.1f, -0.1f, 0.0f,
-		0.3f, 0.1f, 0.0f,
-		0.5f, -0.1f, 0.0f
-	};
-	
-	particlesPos.Gen(0, sizeof(data));
+	V = glm::translate(glm::mat4(1), glm::vec3(0, 0, -2.0f));
+	P = glm::perspective(glm::radians(70.0f), (float)DEFAULT_WINDOW_WIDTH / (float)DEFAULT_WINDOW_HEIGHT, 0.0001f, 100.0f);
+
+	particlesPos.Gen(0, sizeof(float) * 3 * NB_PARTICLE);
 
 	float* gldata = (float*)particlesPos.Map(GL_WRITE_ONLY);
-	for (int n = 0; n < 24; n++)
-		gldata[n] = data[n];
+	for (size_t n = 0; n < NB_PARTICLE; n++) {
+		glm::vec3 point = utils::GetRandomPointInSphere();
+		gldata[(n * 3)] = point.x;
+		gldata[(n * 3) + 1] = point.y;
+		gldata[(n * 3) + 2] = point.z;
+	}
 	particlesPos.Unmap();
 
 	vao.Gen();
 	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(float), 0);
 	shader.Load("particleVS.glsl", "particleFS.glsl");
+	shader.setMat4("VP", P * V);
 	shader.Activate();
 	vao.Bind();
+	glEnable(GL_DEPTH_TEST);
 	glFinish();
 }

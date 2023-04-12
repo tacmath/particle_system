@@ -9,12 +9,13 @@
 
 #include <vector>
 #include <iostream>
+#include "utils.hpp"
 #include "window.h"
 #include "VAO.h"
 #include "VBO.h"
 #include "shader.h"
 
-#define NB_PARTICLE 8
+#define NB_PARTICLE 1000000
 
 
 typedef cl::compatibility::make_kernel<cl::Buffer, cl::Buffer> ComputeParticle;
@@ -30,7 +31,7 @@ class ParticleSystem {
 	cl::BufferGL		posBuffer;
 	cl::Buffer			velBuffer;
 	cl::Kernel			kernel;
-	std::vector<cl::Memory> glBuffers;
+	std::vector<cl::Memory> GLObjects;
 
 	//opengl
 	VAO		vao;
@@ -47,7 +48,7 @@ public:
 private:
 	void InitCl();
 	void CreateKernel();
-	void RunCl();
+	void ComputeParticles();
 
 	void InitGl();
 };

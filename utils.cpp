@@ -1,0 +1,46 @@
+#define CL_HPP_TARGET_OPENCL_VERSION 300
+#include "utils.hpp"
+
+
+cl::Program::Sources utils::GetSources(const std::vector<std::string>& files) {
+	cl::Program::Sources sources;
+	std::fstream		 stream;
+
+	for (const std::string& fileName : files) {
+		stream.open(fileName);
+		std::string kernel_code((std::istreambuf_iterator<char>(stream)),
+			std::istreambuf_iterator<char>());
+		stream.close();
+		sources.push_back({ kernel_code.c_str(),kernel_code.length() + 1 });
+	}
+	return sources;
+}
+
+cl::Program utils::BuildProgram(const cl::Context& context, const cl::Device& device, const std::vector<std::string>& files) {
+	cl::Program program(context, GetSources(files));
+	if (program.build(device) != CL_SUCCESS) {
+		std::cout << " Error building: " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << "\n";
+		exit(1);
+	}
+	return program;
+}
+
+bool utils::IsCLExtensionSupported(const cl::Device& device, const char* extension)
+{
+	if (extension == 0 || extension[0] == '\0')
+		return false;
+	cl::string extentions = device.getInfo<CL_DEVICE_EXTENSIONS>();
+	return extentions.find(extension) != cl::string::npos;
+}
+
+
+glm::vec3 utils::GetRandomPointInSphere() {
+	float d, x, y, z;
+	do {
+		x = ((float)rand() / (RAND_MAX)) * 2.0f - 1.0f;
+		y = ((float)rand() / (RAND_MAX)) * 2.0f - 1.0f;
+		z = ((float)rand() / (RAND_MAX)) * 2.0f - 1.0f;
+		d = x * x + y * y + z * z;
+	} while (d > 1.0f);
+	return glm::vec3(x, y, z);
+}
