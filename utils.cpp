@@ -44,3 +44,11 @@ glm::vec3 utils::GetRandomPointInSphere() {
 	} while (d > 1.0f);
 	return glm::vec3(x, y, z);
 }
+
+glm::vec3 utils::GetRandomPointInCube() {
+	glm::vec3 result;
+	result.x = ((float)rand() / (RAND_MAX)) * 2.0f - 1.0f;
+	result.y = ((float)rand() / (RAND_MAX)) * 2.0f - 1.0f;
+	result.z = ((float)rand() / (RAND_MAX)) * 2.0f - 1.0f;
+	return result;
+}

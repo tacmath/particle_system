@@ -21,19 +21,24 @@ static void showFPS(GLFWwindow* window) {
 
 void ParticleSystem::Start()
 {
+	info.center = { 0,0,0,0 };
+	info.hasGravity = true;
+
+	camera.Init(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, glm::vec3(0, 0, -2));
+
 	InitCl();
 	InitGl();
 	CreateKernel();
+	SetEventCallbacks();
 }
 
 void ParticleSystem::Run()
 {
 	isRunning = true;
-	glfwSwapInterval(0);
+//	glfwSwapInterval(0);
 	while (isRunning) {
-		glfwPollEvents();
-		if (glfwWindowShouldClose(window.context) == 1 || glfwGetKey(window.context, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-			isRunning = false;
+
+		GetEvents();
 
 		ComputeParticles();
 
@@ -103,13 +108,17 @@ void ParticleSystem::CreateKernel()
 	_ASSERT(err == CL_SUCCESS);
 
 	velBuffer = cl::Buffer(clContext, CL_MEM_READ_WRITE, 3 * sizeof(float) * NB_PARTICLE);
+	infoBuffer = cl::Buffer(clContext, CL_MEM_READ_ONLY, sizeof(ParticlesInfo));
 	posBuffer = cl::BufferGL(clContext, CL_MEM_READ_WRITE, particlesPos.ID);
 	kernel.setArg(0, posBuffer);
 	kernel.setArg(1, velBuffer);
+	kernel.setArg(2, infoBuffer);
 
 	GLObjects.push_back(posBuffer);
 
-	//clQueue.enqueueWriteBuffer(velBuffer, CL_FALSE, 0, 3 * sizeof(float) * NB_PARTICLE, 0);
+	clQueue.enqueueWriteBuffer(infoBuffer, CL_FALSE, 0, sizeof(ParticlesInfo), &info);
+
+	clQueue.finish();
 }
 
 void ParticleSystem::ComputeParticles()
@@ -127,16 +136,12 @@ void ParticleSystem::ComputeParticles()
 
 void ParticleSystem::InitGl()
 {
-	glm::mat4 P, V;
-
-	V = glm::translate(glm::mat4(1), glm::vec3(0, 0, -2.0f));
-	P = glm::perspective(glm::radians(70.0f), (float)DEFAULT_WINDOW_WIDTH / (float)DEFAULT_WINDOW_HEIGHT, 0.0001f, 100.0f);
-
 	particlesPos.Gen(0, sizeof(float) * 3 * NB_PARTICLE);
 
 	float* gldata = (float*)particlesPos.Map(GL_WRITE_ONLY);
 	for (size_t n = 0; n < NB_PARTICLE; n++) {
 		glm::vec3 point = utils::GetRandomPointInSphere();
+	//	glm::vec3 point = utils::GetRandomPointInCube();
 		gldata[(n * 3)] = point.x;
 		gldata[(n * 3) + 1] = point.y;
 		gldata[(n * 3) + 2] = point.z;
@@ -146,9 +151,56 @@ void ParticleSystem::InitGl()
 	vao.Gen();
 	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(float), 0);
 	shader.Load("particleVS.glsl", "particleFS.glsl");
-	shader.setMat4("VP", P * V);
+	shader.setMat4("VP", camera.projection * camera.view);
 	shader.Activate();
 	vao.Bind();
 	glEnable(GL_DEPTH_TEST);
+//	glPointSize(1.5);
 	glFinish();
+}
+
+void ParticleSystem::SetEventCallbacks()
+{
+	glfwSetWindowUserPointer(window.context, &callbacks);
+
+	glfwSetCursorPosCallback(window.context, [](GLFWwindow* window, double xpos, double ypos) {
+		static EventCallbacks *callbacks = (EventCallbacks*)glfwGetWindowUserPointer(window);
+		callbacks->onMouseMouvement(xpos, ypos);
+	});
+
+	callbacks.onMouseMouvement = [&](double mouseX, double mouseY){
+		static double lastMouseX = DEFAULT_WINDOW_WIDTH / 2;
+		static double lastMouseY = DEFAULT_WINDOW_HEIGHT / 2;
+
+		camera.Rotate((float)(mouseY - lastMouseY) * 0.5f, (float)(mouseX - lastMouseX) * 0.5f);
+		camera.Update();
+		shader.setMat4("VP", camera.projection * camera.view);
+		lastMouseX = mouseX;
+		lastMouseY = mouseY;
+	};
+}
+
+void ParticleSystem::GetEvents() {
+	glfwPollEvents();
+	if (glfwWindowShouldClose(window.context) == 1 || glfwGetKey(window.context, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		isRunning = false;
+
+	glm::vec3 velocity(0);
+	glm::vec3 look = camera.GetDirection();
+	if (glfwGetKey(window.context, GLFW_KEY_W) == GLFW_PRESS)
+		velocity += look;
+	if (glfwGetKey(window.context, GLFW_KEY_A) == GLFW_PRESS)
+		velocity += -glm::normalize(glm::cross(look, glm::vec3(0.0f, 1.0f, 0.0f)));
+	if (glfwGetKey(window.context, GLFW_KEY_S) == GLFW_PRESS)
+		velocity += -look;
+	if (glfwGetKey(window.context, GLFW_KEY_D) == GLFW_PRESS)
+		velocity += glm::normalize(glm::cross(look, glm::vec3(0.0f, 1.0f, 0.0f)));
+	
+	velocity *= (glfwGetKey(window.context, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? 0.05f : 0.01f;
+	
+	if (velocity != glm::vec3(0)) {
+		camera.Move(velocity);
+		camera.Update();
+		shader.setMat4("VP", camera.projection * camera.view);
+	}
 }

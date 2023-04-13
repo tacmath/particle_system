@@ -14,22 +14,39 @@
 #include "VAO.h"
 #include "VBO.h"
 #include "shader.h"
+#include "camera.h"
+#include <functional>
 
 #define NB_PARTICLE 1000000
 
 
 typedef cl::compatibility::make_kernel<cl::Buffer, cl::Buffer> ComputeParticle;
 
+struct ParticlesInfo {
+	cl_bool	  hasGravity;
+	cl_float4 center;
+};
+
+struct EventCallbacks {
+	std::function<void(double mouseX, double mouseY)> onMouseMouvement;
+
+	EventCallbacks() {
+		onMouseMouvement = [](double, double){};
+	}
+};
+
+
 class ParticleSystem {
 	//modules
 	Window		window;
+	Camera		camera;
 
 	//opencl
 	cl::Device			device;
 	cl::Context			clContext;
 	cl::CommandQueue	clQueue;
 	cl::BufferGL		posBuffer;
-	cl::Buffer			velBuffer;
+	cl::Buffer			velBuffer, infoBuffer;
 	cl::Kernel			kernel;
 	std::vector<cl::Memory> GLObjects;
 
@@ -39,7 +56,9 @@ class ParticleSystem {
 	Shader	shader;
 
 	//other
-	bool isRunning = false;
+	ParticlesInfo	info;
+	EventCallbacks  callbacks;
+	bool			isRunning = false;
 
 public:
 	void Start();
@@ -51,4 +70,7 @@ private:
 	void ComputeParticles();
 
 	void InitGl();
+
+	void SetEventCallbacks();
+	void GetEvents();
 };

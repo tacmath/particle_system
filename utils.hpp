@@ -18,6 +18,7 @@ namespace utils {
 	bool IsCLExtensionSupported(const cl::Device& device, const char* extension);
 
 	glm::vec3 GetRandomPointInSphere();
+	glm::vec3 GetRandomPointInCube();
 };
 
 #endif // !UTILS_HPP

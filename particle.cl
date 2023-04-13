@@ -4,15 +4,17 @@ struct vec3_s {
 	float z;
 };
 
-typedef struct vec3_s vec3;
+struct ParticlesInfo_s {
+	bool		hasGravity;
+	float4		center;
+};
 
+typedef struct ParticlesInfo_s ParticlesInfo;
 
 typedef struct vec3_s vec3;
-//typedef double2 vec3;
 
 constant float G = 9.8;
-constant float DT = 0.1;
-constant float4 center = {0, 0, 0, 0};
+constant float DT = 0.01;
 
 //constant vec3 mov = { 0.001, 0, 0 };
 
@@ -33,13 +35,16 @@ vec3 toVec3(float4 vector) {
 	return result;
 }
 
-kernel void Particle( global vec3 *dPobj, global vec3 *dVel)
+kernel void Particle( global vec3 *dPobj, global vec3 *dVel, constant ParticlesInfo *info)
 {
 	int index = get_global_id(0);
 
 	float4 p = toFloat4(dPobj[index], 0);
 	float4 v = toFloat4(dVel[index], 0);
-	p += 0.0005f * fast_normalize(center - p);
+	if (info->hasGravity) {
+		v += DT * fast_normalize(info->center - p);
+	}
+	p += DT * v;
 	dPobj[index] = toVec3(p);
 	dVel[index] = toVec3(v);
 }
