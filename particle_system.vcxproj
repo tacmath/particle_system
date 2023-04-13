@@ -18,6 +18,30 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="srcs\camera.h" />
+    <ClInclude Include="srcs\particle_system.hpp" />
+    <ClInclude Include="srcs\shader.h" />
+    <ClInclude Include="srcs\utils.hpp" />
+    <ClInclude Include="srcs\VAO.h" />
+    <ClInclude Include="srcs\VBO.h" />
+    <ClInclude Include="srcs\window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="srcs\camera.cpp" />
+    <ClCompile Include="srcs\glad.c" />
+    <ClCompile Include="srcs\main.cpp" />
+    <ClCompile Include="srcs\particle_system.cpp" />
+    <ClCompile Include="srcs\shader.cpp" />
+    <ClCompile Include="srcs\utils.cpp" />
+    <ClCompile Include="srcs\VAO.cpp" />
+    <ClCompile Include="srcs\VBO.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kernel\particle.cl" />
+    <None Include="shaders\particleFS.glsl" />
+    <None Include="shaders\particleVS.glsl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -132,32 +156,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="camera.cpp" />
-    <ClCompile Include="glad.c" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="particle_system.cpp" />
-    <ClCompile Include="shader.cpp" />
-    <ClCompile Include="utils.cpp" />
-    <ClCompile Include="VAO.cpp" />
-    <ClCompile Include="VBO.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="particle_system.hpp" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="utils.hpp" />
-    <ClInclude Include="VAO.h" />
-    <ClInclude Include="VBO.h" />
-    <ClInclude Include="window.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="kernel.cl" />
-    <None Include="example_particle.cl" />
-    <None Include="particle.cl" />
-    <None Include="particleFS.glsl" />
-    <None Include="particleVS.glsl" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

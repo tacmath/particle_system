@@ -103,7 +103,7 @@ void ParticleSystem::InitCl()
 void ParticleSystem::CreateKernel()
 {
 	cl_int err;
-	cl::Program program = utils::BuildProgram(clContext, device, { "particle.cl" });
+	cl::Program program = utils::BuildProgram(clContext, device, { "kernel/particle.cl" });
 	kernel = cl::Kernel(program, "Particle", &err);
 	_ASSERT(err == CL_SUCCESS);
 
@@ -150,7 +150,7 @@ void ParticleSystem::InitGl()
 
 	vao.Gen();
 	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(float), 0);
-	shader.Load("particleVS.glsl", "particleFS.glsl");
+	shader.Load("shaders/particleVS.glsl", "shaders/particleFS.glsl");
 	shader.setMat4("VP", camera.projection * camera.view);
 	shader.Activate();
 	vao.Bind();
