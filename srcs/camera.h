@@ -42,7 +42,7 @@ public:
 	void Init(float windowWidth, float windowHeight, glm::vec3 pos);
 
 	//rotate camera using pitch and yaw
-	void Rotate(float pitch, float yaw);
+	void Rotate(float yaw, float pitch);
 
 	// Move position of the camera with a vec3
 	void Move(glm::vec3 pos);

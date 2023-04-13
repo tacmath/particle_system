@@ -29,9 +29,12 @@ struct ParticlesInfo {
 
 struct EventCallbacks {
 	std::function<void(double mouseX, double mouseY)> onMouseMouvement;
+	std::function<void(int key, int scancode, int action, int mods)> onKey;
+	
 
 	EventCallbacks() {
 		onMouseMouvement = [](double, double){};
+		onKey = [](int, int, int, int) {};
 	}
 };
 
@@ -58,6 +61,7 @@ class ParticleSystem {
 	//other
 	ParticlesInfo	info;
 	EventCallbacks  callbacks;
+	bool			isSphere = true;
 	bool			isRunning = false;
 
 public:

@@ -22,7 +22,7 @@ static void showFPS(GLFWwindow* window) {
 void ParticleSystem::Start()
 {
 	info.center = { 0,0,0,0 };
-	info.hasGravity = true;
+	info.hasGravity = false;
 
 	camera.Init(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, glm::vec3(0, 0, -2));
 
@@ -116,14 +116,16 @@ void ParticleSystem::CreateKernel()
 
 	GLObjects.push_back(posBuffer);
 
-	clQueue.enqueueWriteBuffer(infoBuffer, CL_FALSE, 0, sizeof(ParticlesInfo), &info);
-
+	clQueue.enqueueFillBuffer(velBuffer, 0, 0, 3 * sizeof(float) * NB_PARTICLE);
+	clQueue.enqueueWriteBuffer(infoBuffer, CL_TRUE, 0, sizeof(ParticlesInfo), &info);
 	clQueue.finish();
 }
 
 void ParticleSystem::ComputeParticles()
 {
 	glFinish();
+
+	clQueue.enqueueWriteBuffer(infoBuffer, CL_FALSE, 0, sizeof(ParticlesInfo), &info);
 
 	clQueue.enqueueAcquireGLObjects(&GLObjects);
 	
@@ -138,15 +140,7 @@ void ParticleSystem::InitGl()
 {
 	particlesPos.Gen(0, sizeof(float) * 3 * NB_PARTICLE);
 
-	float* gldata = (float*)particlesPos.Map(GL_WRITE_ONLY);
-	for (size_t n = 0; n < NB_PARTICLE; n++) {
-		glm::vec3 point = utils::GetRandomPointInSphere();
-	//	glm::vec3 point = utils::GetRandomPointInCube();
-		gldata[(n * 3)] = point.x;
-		gldata[(n * 3) + 1] = point.y;
-		gldata[(n * 3) + 2] = point.z;
-	}
-	particlesPos.Unmap();
+	utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
 
 	vao.Gen();
 	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(float), 0);
@@ -168,15 +162,36 @@ void ParticleSystem::SetEventCallbacks()
 		callbacks->onMouseMouvement(xpos, ypos);
 	});
 
+	glfwSetKeyCallback(window.context, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+		static EventCallbacks* callbacks = (EventCallbacks*)glfwGetWindowUserPointer(window);
+		callbacks->onKey(key, scancode, action, mods);
+	});
+
 	callbacks.onMouseMouvement = [&](double mouseX, double mouseY){
 		static double lastMouseX = DEFAULT_WINDOW_WIDTH / 2;
 		static double lastMouseY = DEFAULT_WINDOW_HEIGHT / 2;
 
-		camera.Rotate((float)(mouseY - lastMouseY) * 0.5f, (float)(mouseX - lastMouseX) * 0.5f);
+		camera.Rotate((float)(mouseX - lastMouseX) * 0.5f, (float)(mouseY - lastMouseY) * 0.5f);
 		camera.Update();
 		shader.setMat4("VP", camera.projection * camera.view);
 		lastMouseX = mouseX;
 		lastMouseY = mouseY;
+	};
+
+	callbacks.onKey = [&](int key, int scancode, int action, int mods) {
+		(void)scancode;
+		(void)mods;
+		if (key == GLFW_KEY_G && action == GLFW_PRESS)
+			info.hasGravity = (info.hasGravity) ? false : true;
+		if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+			isSphere = !isSphere;
+			utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
+		}
+		if (key == GLFW_KEY_V && action == GLFW_PRESS) {
+			glFinish();
+			clQueue.enqueueFillBuffer(velBuffer, 0, 0, 3 * sizeof(float) * NB_PARTICLE);
+			clQueue.finish();
+		}
 	};
 }
 

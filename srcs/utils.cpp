@@ -52,3 +52,14 @@ glm::vec3 utils::GetRandomPointInCube() {
 	result.z = ((float)rand() / (RAND_MAX)) * 2.0f - 1.0f;
 	return result;
 }
+
+void utils::InitParticles(VBO& buffer, size_t nbParticles, bool sphere) {
+	float* gldata = (float*)buffer.Map(GL_WRITE_ONLY);
+	for (size_t n = 0; n < nbParticles; n++) {
+		glm::vec3 point = (sphere) ? GetRandomPointInSphere() : GetRandomPointInCube();
+		gldata[(n * 3)] = point.x;
+		gldata[(n * 3) + 1] = point.y;
+		gldata[(n * 3) + 2] = point.z;
+	}
+	buffer.Unmap();
+}

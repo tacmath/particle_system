@@ -8,6 +8,7 @@
 #include <streambuf>
 #include <iostream>
 #include <glm/vec3.hpp>
+#include "VBO.h"
 
 namespace utils {
 
@@ -19,6 +20,8 @@ namespace utils {
 
 	glm::vec3 GetRandomPointInSphere();
 	glm::vec3 GetRandomPointInCube();
+
+	void		InitParticles(VBO &buffer, size_t nbParticles, bool sphere);
 };
 
 #endif // !UTILS_HPP

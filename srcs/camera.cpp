@@ -18,10 +18,10 @@ Camera::Camera() {
 void Camera::Init(float windowWidth, float windowHeight, glm::vec3 pos) {
 	position = pos;
 	view = glm::lookAt(position, position + direction, up);
-	ChangePerspective(fov, windowWidth, windowHeight, 0.0001f, 100.0f);
+	ChangePerspective(fov, windowWidth, windowHeight, 0.0001f, 1000.0f);
 }
 
-void Camera::Rotate(float _pitch, float _yaw) {
+void Camera::Rotate(float _yaw, float _pitch) {
 	pitch += _pitch;
 	yaw += _yaw;
 
