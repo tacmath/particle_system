@@ -36,7 +36,7 @@ void ParticleSystem::Start()
 void ParticleSystem::Run()
 {
 	isRunning = true;
-	glfwSwapInterval(0);
+//	glfwSwapInterval(0);
 	while (isRunning) {
 
 		GetEvents();
@@ -258,7 +258,7 @@ void ParticleSystem::GetEvents() {
 		glfwGetWindowSize(window.context, &width, &height);
 		glm::mat4 invVP = glm::inverse(camera.projection * (glm::mat4(glm::mat3(camera.view))));
 		glm::vec4 screenPoint((float)(posx / width) * 2.0f - 1.0f, -(float)(posy / height) * 2.0f + 1.0f, 0, 1);
-		glm::vec3 point = (glm::vec3(invVP * screenPoint) * 1.5f) + camera.GetPosition();
+		glm::vec3 point = (glm::vec3(invVP * screenPoint) * 2.0f) + camera.GetPosition();
 		info.center = { point.x, point.y, point.z,0 };
 		shader.setVec3("center", point);
 	}

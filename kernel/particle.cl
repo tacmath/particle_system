@@ -14,7 +14,7 @@ typedef struct ParticlesInfo_s ParticlesInfo;
 typedef struct vec3_s vec3;
 
 constant float G = 9.8;
-constant float DT = 0.01;
+constant float DT = 0.03;
 
 //constant vec3 mov = { 0.001, 0, 0 };
 
