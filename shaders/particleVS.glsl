@@ -14,6 +14,6 @@ uniform vec3 baseColor = vec3(1, 0, 0);
 void main()
 {   
     gl_Position = VP * vec4(aPos, 1.0f);
-    float ratio = clamp(length(center - aPos), 0, 1); //or smoothstep(0, 1, length(center - aPos))
+    float ratio = smoothstep(0, 1, length(center - aPos)); //or smoothstep(0, 1, length(center - aPos))
     color = baseColor * ratio + (1 - ratio) * centerColor;
 }

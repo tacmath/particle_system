@@ -29,13 +29,14 @@ void ParticleSystem::Start()
 	InitCl();
 	InitGl();
 	CreateKernel();
+	SetGlfwCallbacks();
 	SetEventCallbacks();
 }
 
 void ParticleSystem::Run()
 {
 	isRunning = true;
-//	glfwSwapInterval(0);
+	glfwSwapInterval(0);
 	while (isRunning) {
 
 		GetEvents();
@@ -53,6 +54,8 @@ void ParticleSystem::Run()
 
 void ParticleSystem::Stop()
 {
+	clQueue.finish();
+	glFinish();
 	shader.Delete();
 }
 
@@ -123,9 +126,9 @@ void ParticleSystem::CreateKernel()
 
 void ParticleSystem::ComputeParticles()
 {
-	glFinish();
-
 	clQueue.enqueueWriteBuffer(infoBuffer, CL_FALSE, 0, sizeof(ParticlesInfo), &info);
+
+	glFinish(); //for portability
 
 	clQueue.enqueueAcquireGLObjects(&GLObjects);
 	
@@ -133,7 +136,7 @@ void ParticleSystem::ComputeParticles()
 	
 	clQueue.enqueueReleaseGLObjects(&GLObjects);
 
-	clQueue.finish();
+//	clQueue.finish();
 }
 
 void ParticleSystem::InitGl()
@@ -153,12 +156,13 @@ void ParticleSystem::InitGl()
 	glFinish();
 }
 
-void ParticleSystem::SetEventCallbacks()
-{
+#include "glm/gtx/string_cast.hpp"
+
+void ParticleSystem::SetGlfwCallbacks() {
 	glfwSetWindowUserPointer(window.context, &callbacks);
 
 	glfwSetCursorPosCallback(window.context, [](GLFWwindow* window, double xpos, double ypos) {
-		static EventCallbacks *callbacks = (EventCallbacks*)glfwGetWindowUserPointer(window);
+		static EventCallbacks* callbacks = (EventCallbacks*)glfwGetWindowUserPointer(window);
 		callbacks->onMouseMouvement(xpos, ypos);
 	});
 
@@ -167,13 +171,23 @@ void ParticleSystem::SetEventCallbacks()
 		callbacks->onKey(key, scancode, action, mods);
 	});
 
+	glfwSetFramebufferSizeCallback(window.context, [](GLFWwindow* window, int width, int height) {
+		static EventCallbacks* callbacks = (EventCallbacks*)glfwGetWindowUserPointer(window);
+		callbacks->onFramebufferSize(width, height);
+	});
+}
+
+void ParticleSystem::SetEventCallbacks()
+{
 	callbacks.onMouseMouvement = [&](double mouseX, double mouseY){
 		static double lastMouseX = DEFAULT_WINDOW_WIDTH / 2;
 		static double lastMouseY = DEFAULT_WINDOW_HEIGHT / 2;
-
-		camera.Rotate((float)(mouseX - lastMouseX) * 0.5f, (float)(mouseY - lastMouseY) * 0.5f);
-		camera.Update();
-		shader.setMat4("VP", camera.projection * camera.view);
+		
+		if (!freeCursor) {
+			camera.Rotate((float)(mouseX - lastMouseX) * 0.5f, (float)(mouseY - lastMouseY) * 0.5f);
+			camera.Update();
+			shader.setMat4("VP", camera.projection * camera.view);
+		}
 		lastMouseX = mouseX;
 		lastMouseY = mouseY;
 	};
@@ -187,11 +201,29 @@ void ParticleSystem::SetEventCallbacks()
 			isSphere = !isSphere;
 			utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
 		}
-		if (key == GLFW_KEY_V && action == GLFW_PRESS) {
-			glFinish();
+		if (key == GLFW_KEY_V && action == GLFW_PRESS)
 			clQueue.enqueueFillBuffer(velBuffer, 0, 0, 3 * sizeof(float) * NB_PARTICLE);
-			clQueue.finish();
+
+		if (key == GLFW_KEY_LEFT_ALT) {
+			if (action == GLFW_PRESS) {
+				int width, height;
+				glfwSetInputMode(window.context, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				glfwGetWindowSize(window.context, &width, &height);
+				glfwSetCursorPos(window.context, width / 2.0, height / 2.0);
+				freeCursor = true;
+				callbacks.onMouseMouvement(width / 2.0, height / 2.0);
+			}
+			else if (action == GLFW_RELEASE) {
+				glfwSetInputMode(window.context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				freeCursor = false;
+			}
 		}
+	};
+
+	callbacks.onFramebufferSize = [&](int width, int height) {
+		glViewport(0, 0, width, height);
+		camera.ChangePerspective(70, (float)width, (float)height, 0.0001f, 1000.0f);
+		shader.setMat4("VP", camera.projection * camera.view);
 	};
 }
 
@@ -217,5 +249,17 @@ void ParticleSystem::GetEvents() {
 		camera.Move(velocity);
 		camera.Update();
 		shader.setMat4("VP", camera.projection * camera.view);
+	}
+
+	if (freeCursor && glfwGetMouseButton(window.context, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		int width, height;
+		double posx, posy;
+		glfwGetCursorPos(window.context, &posx, &posy);
+		glfwGetWindowSize(window.context, &width, &height);
+		glm::mat4 invVP = glm::inverse(camera.projection * (glm::mat4(glm::mat3(camera.view))));
+		glm::vec4 screenPoint((float)(posx / width) * 2.0f - 1.0f, -(float)(posy / height) * 2.0f + 1.0f, 0, 1);
+		glm::vec3 point = (glm::vec3(invVP * screenPoint) * 1.5f) + camera.GetPosition();
+		info.center = { point.x, point.y, point.z,0 };
+		shader.setVec3("center", point);
 	}
 }

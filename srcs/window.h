@@ -53,6 +53,8 @@ public:
         gladLoadGL();
         void SetWiewPort();
         glfwSetCursorPos(context, DEFAULT_WINDOW_WIDTH / 2.0, DEFAULT_WINDOW_HEIGHT / 2.0);
+        glfwSetInputMode(context, GLFW_STICKY_KEYS, GLFW_TRUE);
+        glfwSetInputMode(context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         monitor = glfwGetPrimaryMonitor();
 	}

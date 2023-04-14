@@ -23,18 +23,20 @@
 typedef cl::compatibility::make_kernel<cl::Buffer, cl::Buffer> ComputeParticle;
 
 struct ParticlesInfo {
-	cl_bool	  hasGravity;
 	cl_float4 center;
+	cl_bool	  hasGravity;
 };
 
 struct EventCallbacks {
-	std::function<void(double mouseX, double mouseY)> onMouseMouvement;
-	std::function<void(int key, int scancode, int action, int mods)> onKey;
+	std::function<void(double mouseX, double mouseY)>					onMouseMouvement;
+	std::function<void(int key, int scancode, int action, int mods)>	onKey;
+	std::function<void(int width, int height)>							onFramebufferSize;
 	
 
 	EventCallbacks() {
-		onMouseMouvement = [](double, double){};
-		onKey = [](int, int, int, int) {};
+		onMouseMouvement =	[](double, double){};
+		onKey =				[](int, int, int, int) {};
+		onFramebufferSize =	[](int, int) {};
 	}
 };
 
@@ -61,6 +63,7 @@ class ParticleSystem {
 	//other
 	ParticlesInfo	info;
 	EventCallbacks  callbacks;
+	bool			freeCursor = false;
 	bool			isSphere = true;
 	bool			isRunning = false;
 
@@ -75,6 +78,7 @@ private:
 
 	void InitGl();
 
+	void SetGlfwCallbacks();
 	void SetEventCallbacks();
 	void GetEvents();
 };

@@ -5,8 +5,8 @@ struct vec3_s {
 };
 
 struct ParticlesInfo_s {
-	bool		hasGravity;
 	float4		center;
+	bool		hasGravity;
 };
 
 typedef struct ParticlesInfo_s ParticlesInfo;
