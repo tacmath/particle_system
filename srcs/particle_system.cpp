@@ -1,5 +1,6 @@
 #include "particle_system.hpp"
-
+#define GLFW_EXPOSE_NATIVE_GLX
+#include <GLFW/glfw3native.h>
 
 static void showFPS(GLFWwindow* window) {
 	static double oldTime = 0;
@@ -13,7 +14,7 @@ static void showFPS(GLFWwindow* window) {
 	frames++;
 	if (timeDiff < 1.0f / 30.0f)
 		return;
-	sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	sprintf(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
 	glfwSetWindowTitle(window, title);
 	frames = 0;
 	oldTime = newTime;
@@ -86,14 +87,14 @@ void ParticleSystem::InitCl()
 		exit(1);
 	}
 
-	const cl_context_properties context_properties[] =
+	cl_context_properties context_properties[] =
 	{
 		#ifdef _WIN32
 		CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
 		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
 		#else
-		CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
-		CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+		CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window.context),
+		CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetGLXWindow(window.context),
 		#endif
 		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
 		0

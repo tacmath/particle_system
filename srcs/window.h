@@ -22,14 +22,14 @@
 # define DEFAULT_WINDOW_WIDTH  1700
 # define DEFAULT_WINDOW_HEIGHT  1080
 
-class Window {
+class MainWindow {
 private:
     GLFWmonitor *monitor;
 public:
 	// the window context
 	GLFWwindow*     context;
 
-	Window() {
+	MainWindow() {
         char path[1024];
 
         cwd(path, 1024);
@@ -75,7 +75,7 @@ public:
         glViewport(0, 0, width, height);
     }
 
-    ~Window() {
+    ~MainWindow() {
         glfwDestroyWindow(context);
         glfwTerminate();
     }

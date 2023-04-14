@@ -7,6 +7,10 @@
 #include <Windows.h>
 #endif
 
+#ifndef _ASSERT
+	#define _ASSERT(assertion) if (!(assertion)) std::cout << "Assertion failed" << std::endl; exit(1)
+#endif
+
 #include <vector>
 #include <iostream>
 #include "utils.hpp"
@@ -43,7 +47,7 @@ struct EventCallbacks {
 
 class ParticleSystem {
 	//modules
-	Window		window;
+	MainWindow	window;
 	Camera		camera;
 
 	//opencl
