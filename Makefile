@@ -1,4 +1,4 @@
-#https://stackoverflow.com/questions/7542808/how-to-compile-opencl-on-ubuntu
+#pkg ocl-icd-opencl-dev and ocl-icd-libopencl1
 
 # nom de l'executable
 NAME = particle_system
