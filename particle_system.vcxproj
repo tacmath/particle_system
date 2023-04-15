@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="srcs\camera.h" />
+    <ClInclude Include="srcs\opencl_particles_controleur.hpp" />
     <ClInclude Include="srcs\particle_system.hpp" />
     <ClInclude Include="srcs\shader.h" />
     <ClInclude Include="srcs\utils.hpp" />
@@ -31,6 +32,7 @@
     <ClCompile Include="srcs\camera.cpp" />
     <ClCompile Include="srcs\glad.c" />
     <ClCompile Include="srcs\main.cpp" />
+    <ClCompile Include="srcs\opencl_particles_controleur.cpp" />
     <ClCompile Include="srcs\particle_system.cpp" />
     <ClCompile Include="srcs\shader.cpp" />
     <ClCompile Include="srcs\utils.cpp" />

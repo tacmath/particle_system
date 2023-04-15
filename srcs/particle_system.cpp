@@ -30,9 +30,8 @@ void ParticleSystem::Start()
 	camera.Init(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, glm::vec3(0, 0, -2));
 	colors.Init({ {1, 0, 0}, {1, 1, 0}, {0, 1, 1}, {0, 0, 1} });
 
-	InitCl();
 	InitGl();
-	CreateKernel();
+	particles.Init(NB_PARTICLE, particlesPos);
 	SetGlfwCallbacks();
 	SetEventCallbacks();
 }
@@ -45,7 +44,8 @@ void ParticleSystem::Run()
 
 		GetEvents();
 
-		ComputeParticles();
+		particles.UpdateInfo(info);
+		particles.Compute();
 
 		colors.Update();
 		shader.setVec3("baseColor", colors.GetCurrent());
@@ -61,89 +61,8 @@ void ParticleSystem::Run()
 
 void ParticleSystem::Stop()
 {
-	clQueue.finish();
-	glFinish();
+	particles.Stop();
 	shader.Delete();
-}
-
-void ParticleSystem::InitCl()
-{
-	std::vector<cl::Platform> platforms;
-	std::vector<cl::Device> devices;
-	cl::Platform::get(&platforms);
-
-	_ASSERT(platforms.size() > 0);
-	cl::Platform platform = platforms.front();
-
-	std::cout << "Using platform: " << platform.getInfo<CL_PLATFORM_NAME>() << "\n";
-	platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-
-	_ASSERT(devices.size() > 0);
-
-	for (auto& device : devices) {
-		std::cout << "Using device: " << device.getInfo<CL_DEVICE_NAME>() << "\n";
-		std::cout << "Vendor : " << device.getInfo<CL_DEVICE_VENDOR>() << "\n";
-		std::cout << "Version : " << device.getInfo<CL_DEVICE_VERSION>() << "\n";
-	}
-
-	device = devices.front();
-
-	if (!utils::IsCLExtensionSupported(device, "cl_khr_gl_sharing")) {
-		std::cerr << "cl_khr_gl_sharing is not suported" << std::endl;
-		exit(1);
-	}
-
-	cl_context_properties context_properties[] =
-	{
-		#ifdef _WIN32
-		CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
-		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
-		#else
-		CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window.context),
-		CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetGLXWindow(window.context),
-		#endif
-		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
-		0
-	};
-	
-	clContext = cl::Context(device, context_properties);
-	clQueue = cl::CommandQueue(clContext, device);
-}
-
-void ParticleSystem::CreateKernel()
-{
-	cl_int err;
-	cl::Program program = utils::BuildProgram(clContext, device, { "kernel/particle.cl" });
-	kernel = cl::Kernel(program, "Particle", &err);
-	_ASSERT(err == CL_SUCCESS);
-
-	velBuffer = cl::Buffer(clContext, CL_MEM_READ_WRITE, 3 * sizeof(float) * NB_PARTICLE);
-	infoBuffer = cl::Buffer(clContext, CL_MEM_READ_ONLY, sizeof(ParticlesInfo));
-	posBuffer = cl::BufferGL(clContext, CL_MEM_READ_WRITE, particlesPos.ID);
-	kernel.setArg(0, posBuffer);
-	kernel.setArg(1, velBuffer);
-	kernel.setArg(2, infoBuffer);
-
-	GLObjects.push_back(posBuffer);
-
-	clQueue.enqueueFillBuffer(velBuffer, 0, 0, 3 * sizeof(float) * NB_PARTICLE);
-	clQueue.enqueueWriteBuffer(infoBuffer, CL_TRUE, 0, sizeof(ParticlesInfo), &info);
-	clQueue.finish();
-}
-
-void ParticleSystem::ComputeParticles()
-{
-	clQueue.enqueueWriteBuffer(infoBuffer, CL_FALSE, 0, sizeof(ParticlesInfo), &info);
-
-	glFinish(); //for portability
-
-	clQueue.enqueueAcquireGLObjects(&GLObjects);
-	
-	clQueue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(NB_PARTICLE), cl::NullRange);
-	
-	clQueue.enqueueReleaseGLObjects(&GLObjects);
-
-//	clQueue.finish();
 }
 
 void ParticleSystem::InitGl()
@@ -207,7 +126,7 @@ void ParticleSystem::SetEventCallbacks()
 			utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
 		}
 		if (key == GLFW_KEY_V && action == GLFW_PRESS)
-			clQueue.enqueueFillBuffer(velBuffer, 0, 0, 3 * sizeof(float) * NB_PARTICLE);
+			particles.ResetVelocity();
 
 		if (key == GLFW_KEY_LEFT_ALT) {
 			if (action == GLFW_PRESS) {

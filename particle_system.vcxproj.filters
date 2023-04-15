@@ -36,6 +36,9 @@
     <ClInclude Include="srcs\shader.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="srcs\opencl_particles_controleur.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="srcs\camera.cpp">
@@ -60,6 +63,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="srcs\VAO.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="srcs\opencl_particles_controleur.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

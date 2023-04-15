@@ -1,16 +1,11 @@
 #pragma once
 
-#define CL_HPP_TARGET_OPENCL_VERSION 300
-#include <CL/opencl.hpp>
-
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-
 #ifndef _ASSERT
 	#define _ASSERT(assertion) if (!(assertion)) std::cout << "Assertion failed" << std::endl; exit(1)
 #endif
 
+
+#include "opencl_particles_controleur.hpp"
 #include <vector>
 #include <iostream>
 #include "utils.hpp"
@@ -21,17 +16,8 @@
 #include "camera.h"
 #include <functional>
 
-#ifndef _WIN32
-	#define GLFW_EXPOSE_NATIVE_GLX
-	#include <GLFW/glfw3native.h>
-#endif
 
 #define NB_PARTICLE 1000000
-
-struct ParticlesInfo {
-	cl_float4 center;
-	cl_bool	  hasGravity;
-};
 
 struct EventCallbacks {
 	std::function<void(double mouseX, double mouseY)>					onMouseMouvement;
@@ -51,16 +37,8 @@ class ParticleSystem {
 	//modules
 	MainWindow			window;
 	Camera				camera;
+	ParticlesControleur particles;
 	utils::ColorList	colors;
-
-	//opencl
-	cl::Device			device;
-	cl::Context			clContext;
-	cl::CommandQueue	clQueue;
-	cl::BufferGL		posBuffer;
-	cl::Buffer			velBuffer, infoBuffer;
-	cl::Kernel			kernel;
-	std::vector<cl::Memory> GLObjects;
 
 	//opengl
 	VAO		vao;
@@ -79,10 +57,6 @@ public:
 	void Run();
 	void Stop();
 private:
-	void InitCl();
-	void CreateKernel();
-	void ComputeParticles();
-
 	void InitGl();
 
 	void SetGlfwCallbacks();
