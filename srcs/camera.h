@@ -61,7 +61,7 @@ public:
 	const glm::vec3& GetDirection();
 
 	// change the prespective matrix
-	void ChangePerspective(float FOV, float windowWidth, float windowHeight, float near, float far);
+	void ChangePerspective(float FOV, float windowWidth, float windowHeight, float Near, float Far);
 
 	// update the camera matrice using its data
 	void Update();

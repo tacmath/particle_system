@@ -63,3 +63,33 @@ void utils::InitParticles(VBO& buffer, size_t nbParticles, bool sphere) {
 	}
 	buffer.Unmap();
 }
+
+void utils::ColorList::Update() {
+	float factor = ((float)glfwGetTime() - lastColorChange) / TIME_PER_COLOR;
+	glm::vec3 current, next;
+
+	if (factor > 1.0f) {
+		lastColorChange = (float)glfwGetTime();
+		currentIndex = (currentIndex + 1) * (currentIndex + 1 < colors.size());
+		currentColor = colors[currentIndex];
+		return;
+	}
+	current = colors[currentIndex];
+	next = (currentIndex + 1 < colors.size()) ? colors[currentIndex + 1] : colors[0];
+	currentColor = current * (1 - factor) + next * factor;
+}
+
+void utils::ColorList::Add(const glm::vec3& color) {
+	colors.push_back(color);
+}
+
+void utils::ColorList::Init(const std::vector<glm::vec3>& colorList) {
+	colors = colorList;
+	currentColor = colorList[0];
+	currentIndex = 0;
+	lastColorChange = (float)glfwGetTime();
+}
+
+const glm::vec3& utils::ColorList::GetCurrent() {
+	return currentColor;
+}

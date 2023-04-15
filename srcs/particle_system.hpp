@@ -49,8 +49,9 @@ struct EventCallbacks {
 
 class ParticleSystem {
 	//modules
-	MainWindow	window;
-	Camera		camera;
+	MainWindow			window;
+	Camera				camera;
+	utils::ColorList	colors;
 
 	//opencl
 	cl::Device			device;

@@ -28,6 +28,7 @@ void ParticleSystem::Start()
 	info.hasGravity = false;
 
 	camera.Init(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, glm::vec3(0, 0, -2));
+	colors.Init({ {1, 0, 0}, {1, 1, 0}, {0, 1, 1}, {0, 0, 1} });
 
 	InitCl();
 	InitGl();
@@ -45,6 +46,9 @@ void ParticleSystem::Run()
 		GetEvents();
 
 		ComputeParticles();
+
+		colors.Update();
+		shader.setVec3("baseColor", colors.GetCurrent());
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDrawArrays(GL_POINTS, 0, NB_PARTICLE);
@@ -244,9 +248,9 @@ void ParticleSystem::GetEvents() {
 	if (glfwGetKey(window.context, GLFW_KEY_D) == GLFW_PRESS)
 		velocity += glm::normalize(glm::cross(look, glm::vec3(0.0f, 1.0f, 0.0f)));
 	
-	velocity *= (glfwGetKey(window.context, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? 0.05f : 0.01f;
-	
 	if (velocity != glm::vec3(0)) {
+		velocity *= (glfwGetKey(window.context, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? 0.1f : 0.01f;
+
 		camera.Move(velocity);
 		camera.Update();
 		shader.setMat4("VP", camera.projection * camera.view);
