@@ -1,6 +1,4 @@
 #include "particle_system.hpp"
-#define GLFW_EXPOSE_NATIVE_GLX
-#include <GLFW/glfw3native.h>
 
 static void showFPS(GLFWwindow* window) {
 	static double oldTime = 0;
@@ -99,7 +97,7 @@ void ParticleSystem::InitCl()
 		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
 		0
 	};
-
+	
 	clContext = cl::Context(device, context_properties);
 	clQueue = cl::CommandQueue(clContext, device);
 }
@@ -156,8 +154,6 @@ void ParticleSystem::InitGl()
 //	glPointSize(1.5);
 	glFinish();
 }
-
-#include "glm/gtx/string_cast.hpp"
 
 void ParticleSystem::SetGlfwCallbacks() {
 	glfwSetWindowUserPointer(window.context, &callbacks);

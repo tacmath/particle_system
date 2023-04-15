@@ -3,10 +3,6 @@
 #define CL_HPP_TARGET_OPENCL_VERSION 300
 #include <CL/opencl.hpp>
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-
 #ifndef _ASSERT
 	#define _ASSERT(assertion) if (!(assertion)) std::cout << "Assertion failed" << std::endl; exit(1)
 #endif
@@ -21,10 +17,15 @@
 #include "camera.h"
 #include <functional>
 
+#ifdef _WIN32
+	#include <Windows.h>
+	#define sprintf(x) sprintf_s(x)
+#else
+	#define GLFW_EXPOSE_NATIVE_GLX
+	#include <GLFW/glfw3native.h>
+#endif
+
 #define NB_PARTICLE 1000000
-
-
-typedef cl::compatibility::make_kernel<cl::Buffer, cl::Buffer> ComputeParticle;
 
 struct ParticlesInfo {
 	cl_float4 center;

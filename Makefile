@@ -15,7 +15,7 @@ INC_PATH= srcs/
 HEADER= $(INC_PATH)/*.h $(INC_PATH)/*.hpp
 
 #framework
-FRAMEWORK= -ldl `pkg-config --static --libs gl glfw3` -L ~/.dep/usr/lib/x86_64-linux-gnu/
+FRAMEWORK= -ldl `pkg-config --static --libs gl glfw3 OpenCL` -L ~/.dep/usr/lib/x86_64-linux-gnu/
 FRAMEWORK_INC = -I libs/include
 
 NAME_SRC=	camera.cpp\
