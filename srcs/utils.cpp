@@ -30,6 +30,28 @@ void utils::InitParticles(VBO& buffer, size_t nbParticles, bool sphere) {
 	buffer.Unmap();
 }
 
+void utils::showFPS(GLFWwindow* window) {
+	static double oldTime = 0;
+	static double newTime;
+	static int frames = 0;
+	static char title[60];
+	double timeDiff;
+
+	newTime = glfwGetTime();
+	timeDiff = newTime - oldTime;
+	frames++;
+	if (timeDiff < 1.0f / 30.0f)
+		return;
+#ifdef _WIN32
+	sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+#else
+	sprintf(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+#endif
+	glfwSetWindowTitle(window, title);
+	frames = 0;
+	oldTime = newTime;
+}
+
 void utils::ColorList::Update() {
 	float factor = ((float)glfwGetTime() - lastColorChange) / TIME_PER_COLOR;
 	glm::vec3 current, next;

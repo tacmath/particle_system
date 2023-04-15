@@ -1,27 +1,5 @@
 #include "particle_system.hpp"
 
-static void showFPS(GLFWwindow* window) {
-	static double oldTime = 0;
-	static double newTime;
-	static int frames = 0;
-	static char title[60];
-	double timeDiff;
-
-	newTime = glfwGetTime();
-	timeDiff = newTime - oldTime;
-	frames++;
-	if (timeDiff < 1.0f / 30.0f)
-		return;
-	#ifdef _WIN32
-		sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
-	#else
-		sprintf(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
-	#endif
-	glfwSetWindowTitle(window, title);
-	frames = 0;
-	oldTime = newTime;
-}
-
 void ParticleSystem::Start()
 {
 	info.center = { 0,0,0,0 };
@@ -53,7 +31,7 @@ void ParticleSystem::Run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDrawArrays(GL_POINTS, 0, NB_PARTICLE);
 
-		showFPS(window.context);
+		utils::showFPS(window.context);
 
 		glfwSwapBuffers(window.context);
 	}
@@ -79,7 +57,6 @@ void ParticleSystem::InitGl()
 	vao.Bind();
 	glEnable(GL_DEPTH_TEST);
 //	glPointSize(1.5);
-	glFinish();
 }
 
 void ParticleSystem::SetGlfwCallbacks() {

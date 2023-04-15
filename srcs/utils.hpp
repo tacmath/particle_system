@@ -11,10 +11,11 @@
 
 namespace utils {
 
-	glm::vec3 GetRandomPointInSphere();
-	glm::vec3 GetRandomPointInCube();
+	glm::vec3	GetRandomPointInSphere();
+	glm::vec3	GetRandomPointInCube();
 
 	void		InitParticles(VBO &buffer, size_t nbParticles, bool sphere);
+	void		showFPS(GLFWwindow* window);
 
 	class ColorList {
 		std::vector<glm::vec3>	colors;
