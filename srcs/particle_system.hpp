@@ -7,6 +7,10 @@
 #include <Windows.h>
 #endif
 
+#ifndef _ASSERT
+	#define _ASSERT(assertion) if (!(assertion)) std::cout << "Assertion failed" << std::endl; exit(1)
+#endif
+
 #include <vector>
 #include <iostream>
 #include "utils.hpp"
@@ -17,10 +21,12 @@
 #include "camera.h"
 #include <functional>
 
+#ifndef _WIN32
+	#define GLFW_EXPOSE_NATIVE_GLX
+	#include <GLFW/glfw3native.h>
+#endif
+
 #define NB_PARTICLE 1000000
-
-
-typedef cl::compatibility::make_kernel<cl::Buffer, cl::Buffer> ComputeParticle;
 
 struct ParticlesInfo {
 	cl_float4 center;
@@ -43,7 +49,7 @@ struct EventCallbacks {
 
 class ParticleSystem {
 	//modules
-	Window		window;
+	MainWindow	window;
 	Camera		camera;
 
 	//opencl

@@ -1,6 +1,5 @@
 #include "particle_system.hpp"
 
-
 static void showFPS(GLFWwindow* window) {
 	static double oldTime = 0;
 	static double newTime;
@@ -13,7 +12,11 @@ static void showFPS(GLFWwindow* window) {
 	frames++;
 	if (timeDiff < 1.0f / 30.0f)
 		return;
-	sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	#ifdef _WIN32
+		sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	#else
+		sprintf(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	#endif
 	glfwSetWindowTitle(window, title);
 	frames = 0;
 	oldTime = newTime;
@@ -86,19 +89,19 @@ void ParticleSystem::InitCl()
 		exit(1);
 	}
 
-	const cl_context_properties context_properties[] =
+	cl_context_properties context_properties[] =
 	{
 		#ifdef _WIN32
 		CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
 		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
 		#else
-		CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
-		CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+		CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window.context),
+		CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetGLXWindow(window.context),
 		#endif
 		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
 		0
 	};
-
+	
 	clContext = cl::Context(device, context_properties);
 	clQueue = cl::CommandQueue(clContext, device);
 }
@@ -155,8 +158,6 @@ void ParticleSystem::InitGl()
 //	glPointSize(1.5);
 	glFinish();
 }
-
-#include "glm/gtx/string_cast.hpp"
 
 void ParticleSystem::SetGlfwCallbacks() {
 	glfwSetWindowUserPointer(window.context, &callbacks);
