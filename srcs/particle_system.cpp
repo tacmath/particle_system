@@ -12,7 +12,11 @@ static void showFPS(GLFWwindow* window) {
 	frames++;
 	if (timeDiff < 1.0f / 30.0f)
 		return;
-	sprintf(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	#ifdef _WIN32
+		sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	#else
+		sprintf(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+	#endif
 	glfwSetWindowTitle(window, title);
 	frames = 0;
 	oldTime = newTime;
