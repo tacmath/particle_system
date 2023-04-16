@@ -4,7 +4,13 @@
 void ParticlesControleur::Init(size_t nbParticles, const VBO& glPosBuffer) {
 	this->nbParticles = nbParticles;
     program.Load("shaders/particleCS.glsl");
+    velocityBuffer.Gen(0, nbParticles * sizeof(GLfloat) * 3);
+    float* data = (float*)velocityBuffer.Map(GL_WRITE_ONLY); //need to find a better system
+    for (size_t n = 0; n < nbParticles * 3; n++)
+        data[n] = 0;
+    velocityBuffer.Unmap();
     glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, glPosBuffer.ID, 0, nbParticles * sizeof(GLfloat) * 3);
+    glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, velocityBuffer.ID, 0, nbParticles * sizeof(GLfloat) * 3);
 }
 
 void ParticlesControleur::Stop() {
@@ -13,7 +19,7 @@ void ParticlesControleur::Stop() {
 
 void ParticlesControleur::Compute() {
     program.Activate();
-    glDispatchCompute(nbParticles, 1, 1);
+    glDispatchCompute(nbParticles / 32, 1, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 }
 

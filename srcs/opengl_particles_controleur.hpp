@@ -39,6 +39,7 @@ private:
 
 class ParticlesControleur {
 	size_t				nbParticles;
+	VBO					velocityBuffer;
 	ComputeShader		program;
 
 
