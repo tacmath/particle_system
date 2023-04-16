@@ -4,6 +4,7 @@
 void ParticlesControleur::Init(size_t nbParticles, const VBO& glPosBuffer) {
 	this->nbParticles = nbParticles;
     program.Load("shaders/particleCS.glsl");
+    glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, glPosBuffer.ID, 0, nbParticles * sizeof(GLfloat) * 3);
 }
 
 void ParticlesControleur::Stop() {
@@ -11,7 +12,9 @@ void ParticlesControleur::Stop() {
 }
 
 void ParticlesControleur::Compute() {
-
+    program.Activate();
+    glDispatchCompute(nbParticles, 1, 1);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
 }
 
 void ParticlesControleur::UpdateInfo(const ParticlesInfo& info) {

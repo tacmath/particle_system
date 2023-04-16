@@ -28,6 +28,7 @@ void ParticleSystem::Run()
 		colors.Update();
 		shader.setVec3("baseColor", colors.GetCurrent());
 
+		shader.Activate();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDrawArrays(GL_POINTS, 0, NB_PARTICLE);
 
@@ -45,12 +46,12 @@ void ParticleSystem::Stop()
 
 void ParticleSystem::InitGl()
 {
-	particlesPos.Gen(0, sizeof(float) * 3 * NB_PARTICLE);
+	particlesPos.Gen(0, sizeof(GLfloat) * 3 * NB_PARTICLE);
 
 	utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
 
 	vao.Gen();
-	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(float), 0);
+	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(GLfloat), 0);
 	shader.Load("shaders/particleVS.glsl", "shaders/particleFS.glsl");
 	shader.setMat4("VP", camera.projection * camera.view);
 	shader.Activate();

@@ -17,7 +17,7 @@
 #include <functional>
 
 
-#define NB_PARTICLE 1000000
+#define NB_PARTICLE 100000
 
 struct EventCallbacks {
 	std::function<void(double mouseX, double mouseY)>					onMouseMouvement;
