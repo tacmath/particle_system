@@ -36,6 +36,9 @@
     <ClInclude Include="srcs\shader.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="srcs\opengl_particles_controleur.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
     <ClInclude Include="srcs\opencl_particles_controleur.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -65,7 +68,7 @@
     <ClCompile Include="srcs\VAO.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="srcs\opencl_particles_controleur.cpp">
+    <ClCompile Include="srcs\opengl_particles_controleur.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,6 +80,9 @@
       <Filter>Fichiers de ressources</Filter>
     </None>
     <None Include="kernel\particle.cl">
+      <Filter>Fichiers de ressources</Filter>
+    </None>
+    <None Include="shaders\particleCS.glsl">
       <Filter>Fichiers de ressources</Filter>
     </None>
   </ItemGroup>

@@ -2,7 +2,7 @@
 
 void ParticleSystem::Start()
 {
-	info.center = { 0,0,0,0 };
+	info.SetCenter(glm::vec3(0));
 	info.hasGravity = false;
 
 	camera.Init(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, glm::vec3(0, 0, -2));
@@ -160,7 +160,7 @@ void ParticleSystem::GetEvents() {
 		glm::mat4 invVP = glm::inverse(camera.projection * (glm::mat4(glm::mat3(camera.view))));
 		glm::vec4 screenPoint((float)(posx / width) * 2.0f - 1.0f, -(float)(posy / height) * 2.0f + 1.0f, 0, 1);
 		glm::vec3 point = (glm::vec3(invVP * screenPoint) * 2.0f) + camera.GetPosition();
-		info.center = { point.x, point.y, point.z,0 };
+		info.SetCenter(point);
 		shader.setVec3("center", point);
 	}
 }

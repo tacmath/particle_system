@@ -13,6 +13,7 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <glm/vec3.hpp>
 #include "VBO.h"
 
 #ifndef _WIN32
@@ -31,6 +32,10 @@ namespace openclUtils {
 struct ParticlesInfo {
 	cl_float4 center;
 	cl_bool	  hasGravity;
+
+	void SetCenter(const glm::vec3& _center) {
+		center = { _center.x, _center.y, _center.z, 0 };
+	}
 };
 
 class ParticlesControleur {

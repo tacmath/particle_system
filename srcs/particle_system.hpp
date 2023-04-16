@@ -5,7 +5,7 @@
 #endif
 
 
-#include "opencl_particles_controleur.hpp"
+#include "opengl_particles_controleur.hpp"
 #include <vector>
 #include <iostream>
 #include "utils.hpp"
