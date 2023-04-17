@@ -62,7 +62,6 @@ void ParticleSystem::InitGl()
 	shader.Activate();
 	vao.Bind();
 	glEnable(GL_DEPTH_TEST);
-//	glPointSize(1.5);
 }
 
 void ParticleSystem::InitImgui() {
@@ -210,14 +209,32 @@ void ParticleSystem::DrawMenu() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::Begin("Menu", 0, ImGuiWindowFlags_NoCollapse/* | ImGuiWindowFlags_AlwaysAutoResize*/);
+	ImGui::Begin("Menu", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
 
 	ImVec2 buttonSize;
 	const char* label;
 
 	buttonSize.x = ImGui::GetWindowWidth() - 2 * ImGui::GetStyle().WindowPadding.x;
 	buttonSize.y = 0;
-	
+
+	if (ImGui::ColorEdit3("Center color", (float*)&options.centerColor))
+		shader.setVec3("centerColor", options.centerColor);
+
+	glm::vec3 center = info.GetCenter();
+	if (ImGui::InputFloat3("Center Pos", (float*)&center)) {
+		shader.setVec3("center", center);
+		info.SetCenter(center);
+	}
+
+	ImGui::PushItemWidth(buttonSize.x);
+	if (ImGui::SliderFloat("##center size", &options.centerSize, 0.0f, 10.0f, "Center Size %.2f"))
+		shader.setFloat("centerSize", options.centerSize);
+
+	if (ImGui::SliderFloat("##particle size", &options.particleSize, 1.0f, 5.0f, "Particle Size %.1f"))
+		glPointSize(options.particleSize);
+
+	ImGui::PopItemWidth();
+
 	if (ImGui::Button("Reset Velocity", buttonSize))
 		particles.ResetVelocity();
 

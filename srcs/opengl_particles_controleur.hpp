@@ -19,6 +19,10 @@ struct ParticlesInfo {
 		center[1] = _center.y;
 		center[2] = _center.z;
 	}
+
+	glm::vec3 GetCenter() {
+		return glm::vec3(center[0], center[1], center[2]);
+	}
 };
 
 class ComputeShader {

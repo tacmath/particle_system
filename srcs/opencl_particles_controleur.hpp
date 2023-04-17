@@ -36,6 +36,10 @@ struct ParticlesInfo {
 	void SetCenter(const glm::vec3& _center) {
 		center = { _center.x, _center.y, _center.z, 0 };
 	}
+
+	glm::vec3 GetCenter() {
+		return glm::vec3(center.x , center.y, center.z);
+	}
 };
 
 class ParticlesControleur {

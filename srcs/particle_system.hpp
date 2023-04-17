@@ -37,6 +37,18 @@ struct EventCallbacks {
 	}
 };
 
+struct ParticlesOptions {
+	glm::vec3	centerColor;
+	GLfloat		centerSize;
+	GLfloat		particleSize;
+
+	ParticlesOptions() {
+		centerColor = glm::vec3(1);
+		centerSize = 1.0f;
+		particleSize = 1.0f;
+	}
+};
+
 
 class ParticleSystem {
 	//modules
@@ -53,6 +65,7 @@ class ParticleSystem {
 	//other
 	uint32_t		nbParticles = 0;
 	ParticlesInfo	info;
+	ParticlesOptions options;
 	EventCallbacks  callbacks;
 	bool			freeCursor = false;
 	bool			inMenu = false;
