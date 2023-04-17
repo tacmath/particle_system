@@ -1,38 +1,17 @@
 #include "particle_system.hpp"
 
-static void showFPS(GLFWwindow* window) {
-	static double oldTime = 0;
-	static double newTime;
-	static int frames = 0;
-	static char title[60];
-	double timeDiff;
-
-	newTime = glfwGetTime();
-	timeDiff = newTime - oldTime;
-	frames++;
-	if (timeDiff < 1.0f / 30.0f)
-		return;
-	#ifdef _WIN32
-		sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
-	#else
-		sprintf(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
-	#endif
-	glfwSetWindowTitle(window, title);
-	frames = 0;
-	oldTime = newTime;
-}
-
-void ParticleSystem::Start()
+void ParticleSystem::Start(uint32_t nbParticles)
 {
-	info.center = { 0,0,0,0 };
+	this->nbParticles = nbParticles;
+
+	info.SetCenter(glm::vec3(0));
 	info.hasGravity = false;
 
 	camera.Init(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, glm::vec3(0, 0, -2));
 	colors.Init({ {1, 0, 0}, {1, 1, 0}, {0, 1, 1}, {0, 0, 1} });
 
-	InitCl();
 	InitGl();
-	CreateKernel();
+	particles.Init(nbParticles, particlesPos);
 	SetGlfwCallbacks();
 	SetEventCallbacks();
 }
@@ -45,15 +24,17 @@ void ParticleSystem::Run()
 
 		GetEvents();
 
-		ComputeParticles();
+		particles.UpdateInfo(info);
+		particles.Compute();
 
 		colors.Update();
 		shader.setVec3("baseColor", colors.GetCurrent());
 
+		shader.Activate();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArrays(GL_POINTS, 0, NB_PARTICLE);
+		glDrawArrays(GL_POINTS, 0, nbParticles);
 
-		showFPS(window.context);
+		utils::showFPS(window.context);
 
 		glfwSwapBuffers(window.context);
 	}
@@ -61,106 +42,25 @@ void ParticleSystem::Run()
 
 void ParticleSystem::Stop()
 {
-	clQueue.finish();
-	glFinish();
+	particles.Stop();
+	particlesPos.Delete();
 	shader.Delete();
-}
-
-void ParticleSystem::InitCl()
-{
-	std::vector<cl::Platform> platforms;
-	std::vector<cl::Device> devices;
-	cl::Platform::get(&platforms);
-
-	_ASSERT(platforms.size() > 0);
-	cl::Platform platform = platforms.front();
-
-	std::cout << "Using platform: " << platform.getInfo<CL_PLATFORM_NAME>() << "\n";
-	platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-
-	_ASSERT(devices.size() > 0);
-
-	for (auto& device : devices) {
-		std::cout << "Using device: " << device.getInfo<CL_DEVICE_NAME>() << "\n";
-		std::cout << "Vendor : " << device.getInfo<CL_DEVICE_VENDOR>() << "\n";
-		std::cout << "Version : " << device.getInfo<CL_DEVICE_VERSION>() << "\n";
-	}
-
-	device = devices.front();
-
-	if (!utils::IsCLExtensionSupported(device, "cl_khr_gl_sharing")) {
-		std::cerr << "cl_khr_gl_sharing is not suported" << std::endl;
-		exit(1);
-	}
-
-	cl_context_properties context_properties[] =
-	{
-		#ifdef _WIN32
-		CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
-		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
-		#else
-		CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window.context),
-		CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetGLXWindow(window.context),
-		#endif
-		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
-		0
-	};
-	
-	clContext = cl::Context(device, context_properties);
-	clQueue = cl::CommandQueue(clContext, device);
-}
-
-void ParticleSystem::CreateKernel()
-{
-	cl_int err;
-	cl::Program program = utils::BuildProgram(clContext, device, { "kernel/particle.cl" });
-	kernel = cl::Kernel(program, "Particle", &err);
-	_ASSERT(err == CL_SUCCESS);
-
-	velBuffer = cl::Buffer(clContext, CL_MEM_READ_WRITE, 3 * sizeof(float) * NB_PARTICLE);
-	infoBuffer = cl::Buffer(clContext, CL_MEM_READ_ONLY, sizeof(ParticlesInfo));
-	posBuffer = cl::BufferGL(clContext, CL_MEM_READ_WRITE, particlesPos.ID);
-	kernel.setArg(0, posBuffer);
-	kernel.setArg(1, velBuffer);
-	kernel.setArg(2, infoBuffer);
-
-	GLObjects.push_back(posBuffer);
-
-	clQueue.enqueueFillBuffer(velBuffer, 0, 0, 3 * sizeof(float) * NB_PARTICLE);
-	clQueue.enqueueWriteBuffer(infoBuffer, CL_TRUE, 0, sizeof(ParticlesInfo), &info);
-	clQueue.finish();
-}
-
-void ParticleSystem::ComputeParticles()
-{
-	clQueue.enqueueWriteBuffer(infoBuffer, CL_FALSE, 0, sizeof(ParticlesInfo), &info);
-
-	glFinish(); //for portability
-
-	clQueue.enqueueAcquireGLObjects(&GLObjects);
-	
-	clQueue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(NB_PARTICLE), cl::NullRange);
-	
-	clQueue.enqueueReleaseGLObjects(&GLObjects);
-
-//	clQueue.finish();
 }
 
 void ParticleSystem::InitGl()
 {
-	particlesPos.Gen(0, sizeof(float) * 3 * NB_PARTICLE);
+	particlesPos.Gen(0, sizeof(GLfloat) * 3 * nbParticles);
 
-	utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
+	utils::InitParticles(particlesPos, nbParticles, isSphere);
 
 	vao.Gen();
-	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(float), 0);
+	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(GLfloat), 0);
 	shader.Load("shaders/particleVS.glsl", "shaders/particleFS.glsl");
 	shader.setMat4("VP", camera.projection * camera.view);
 	shader.Activate();
 	vao.Bind();
 	glEnable(GL_DEPTH_TEST);
 //	glPointSize(1.5);
-	glFinish();
 }
 
 void ParticleSystem::SetGlfwCallbacks() {
@@ -204,10 +104,10 @@ void ParticleSystem::SetEventCallbacks()
 			info.hasGravity = (info.hasGravity) ? false : true;
 		if (key == GLFW_KEY_R && action == GLFW_PRESS) {
 			isSphere = !isSphere;
-			utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
+			utils::InitParticles(particlesPos, nbParticles, isSphere);
 		}
 		if (key == GLFW_KEY_V && action == GLFW_PRESS)
-			clQueue.enqueueFillBuffer(velBuffer, 0, 0, 3 * sizeof(float) * NB_PARTICLE);
+			particles.ResetVelocity();
 
 		if (key == GLFW_KEY_LEFT_ALT) {
 			if (action == GLFW_PRESS) {
@@ -264,7 +164,7 @@ void ParticleSystem::GetEvents() {
 		glm::mat4 invVP = glm::inverse(camera.projection * (glm::mat4(glm::mat3(camera.view))));
 		glm::vec4 screenPoint((float)(posx / width) * 2.0f - 1.0f, -(float)(posy / height) * 2.0f + 1.0f, 0, 1);
 		glm::vec3 point = (glm::vec3(invVP * screenPoint) * 2.0f) + camera.GetPosition();
-		info.center = { point.x, point.y, point.z,0 };
+		info.SetCenter(point);
 		shader.setVec3("center", point);
 	}
 }

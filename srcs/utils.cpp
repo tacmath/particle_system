@@ -1,38 +1,4 @@
-#define CL_HPP_TARGET_OPENCL_VERSION 300
 #include "utils.hpp"
-
-
-cl::Program::Sources utils::GetSources(const std::vector<std::string>& files) {
-	cl::Program::Sources sources;
-	std::fstream		 stream;
-
-	for (const std::string& fileName : files) {
-		stream.open(fileName);
-		std::string kernel_code((std::istreambuf_iterator<char>(stream)),
-			std::istreambuf_iterator<char>());
-		stream.close();
-		sources.push_back({ kernel_code.c_str(),kernel_code.length() + 1 });
-	}
-	return sources;
-}
-
-cl::Program utils::BuildProgram(const cl::Context& context, const cl::Device& device, const std::vector<std::string>& files) {
-	cl::Program program(context, GetSources(files));
-	if (program.build(device) != CL_SUCCESS) {
-		std::cout << " Error building: " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << "\n";
-		exit(1);
-	}
-	return program;
-}
-
-bool utils::IsCLExtensionSupported(const cl::Device& device, const char* extension)
-{
-	if (extension == 0 || extension[0] == '\0')
-		return false;
-	cl::string extentions = device.getInfo<CL_DEVICE_EXTENSIONS>();
-	return extentions.find(extension) != cl::string::npos;
-}
-
 
 glm::vec3 utils::GetRandomPointInSphere() {
 	float d, x, y, z;
@@ -62,6 +28,28 @@ void utils::InitParticles(VBO& buffer, size_t nbParticles, bool sphere) {
 		gldata[(n * 3) + 2] = point.z;
 	}
 	buffer.Unmap();
+}
+
+void utils::showFPS(GLFWwindow* window) {
+	static double oldTime = 0;
+	static double newTime;
+	static int frames = 0;
+	static char title[60];
+	double timeDiff;
+
+	newTime = glfwGetTime();
+	timeDiff = newTime - oldTime;
+	frames++;
+	if (timeDiff < 1.0f / 30.0f)
+		return;
+#ifdef _WIN32
+	sprintf_s(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+#else
+	sprintf(title, "Particle System :  FPS = %d  ms = %f", (int)((1.0 / timeDiff) * frames), (timeDiff * 1000) / frames);
+#endif
+	glfwSetWindowTitle(window, title);
+	frames = 0;
+	oldTime = newTime;
 }
 
 void utils::ColorList::Update() {

@@ -4,9 +4,9 @@ VBO::VBO(const void* data, size_t size) {
     Gen(data, size);
 }
 
-void VBO::Gen(const void* data, size_t size) {
+void VBO::Gen(const void* data, size_t size, GLuint usage) {
     glCreateBuffers(1, &ID);
-    glNamedBufferData(ID, size, data, GL_STATIC_DRAW);
+    glNamedBufferData(ID, size, data, usage);
 }
 
 void* VBO::Map(GLenum access) {

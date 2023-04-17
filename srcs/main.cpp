@@ -1,5 +1,7 @@
 #include "particle_system.hpp"
 
+#define NB_PARTICLE 1000000
+
 std::string glStringEnum(GLenum glenum)
 {
     std::string enumString = "NONE";
@@ -56,11 +58,21 @@ static void debug(void) {
 }
 
 
-int main() {
+int main(int ac, char **av) {
 	ParticleSystem particleSystem;
+    uint32_t nbParticles = NB_PARTICLE;
 
+    if (ac > 1) {
+        if (atoi(av[1]) <=0)
+            std::cout << "Invalid Argument" << std::endl;
+        else
+            nbParticles = atoi(av[1]);
+    }
+    if (nbParticles % 32)
+        nbParticles = nbParticles - (nbParticles % 32) + 32;
+    std::cout << "Alligned particles number is " << nbParticles << std::endl;
     debug();
-	particleSystem.Start();
+	particleSystem.Start(nbParticles);
 	particleSystem.Run();
 	particleSystem.Stop();
 
