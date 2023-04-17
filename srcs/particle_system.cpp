@@ -230,7 +230,7 @@ void ParticleSystem::DrawMenu() {
 	if (ImGui::SliderFloat("##center size", &options.centerSize, 0.0f, 10.0f, "Center Size %.2f"))
 		shader.setFloat("centerSize", options.centerSize);
 
-	if (ImGui::SliderFloat("##particle size", &options.particleSize, 1.0f, 5.0f, "Particle Size %.1f"))
+	if (ImGui::SliderFloat("##particle size", &options.particleSize, 1.0f, 5.0f, "Particle Size %.0f"))
 		glPointSize(options.particleSize);
 
 	ImGui::PopItemWidth();
