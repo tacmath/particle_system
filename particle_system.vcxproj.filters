@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Fichiers sources\lib sources">
+      <UniqueIdentifier>{0693c22c-9b2d-47a2-bcfb-73cb1515cfcc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="srcs\VBO.h">
@@ -47,9 +50,6 @@
     <ClCompile Include="srcs\camera.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="srcs\glad.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="srcs\main.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -73,6 +73,27 @@
     </ClCompile>
     <ClCompile Include="srcs\opengl_particles_controleur.cpp">
       <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="srcs\glad.c">
+      <Filter>Fichiers sources\lib sources</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projet\minecraft\libraries\imgui\imgui.cpp">
+      <Filter>Fichiers sources\lib sources</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>Fichiers sources\lib sources</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_glfw.cpp">
+      <Filter>Fichiers sources\lib sources</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>Fichiers sources\lib sources</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>Fichiers sources\lib sources</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
+      <Filter>Fichiers sources\lib sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

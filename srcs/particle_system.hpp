@@ -20,7 +20,9 @@
 #include "shader.h"
 #include "camera.h"
 #include <functional>
-
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+#include <imgui.h>
 
 struct EventCallbacks {
 	std::function<void(double mouseX, double mouseY)>					onMouseMouvement;
@@ -53,6 +55,7 @@ class ParticleSystem {
 	ParticlesInfo	info;
 	EventCallbacks  callbacks;
 	bool			freeCursor = false;
+	bool			inMenu = false;
 	bool			isSphere = true;
 	bool			isRunning = false;
 
@@ -62,6 +65,7 @@ public:
 	void Stop();
 private:
 	void InitGl();
+	void InitImgui();
 
 	void SetGlfwCallbacks();
 	void SetEventCallbacks();

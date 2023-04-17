@@ -11,6 +11,7 @@ void ParticleSystem::Start(uint32_t nbParticles)
 	colors.Init({ {1, 0, 0}, {1, 1, 0}, {0, 1, 1}, {0, 0, 1} });
 
 	InitGl();
+	InitImgui();
 	particles.Init(nbParticles, particlesPos);
 	SetGlfwCallbacks();
 	SetEventCallbacks();
@@ -63,6 +64,25 @@ void ParticleSystem::InitGl()
 //	glPointSize(1.5);
 }
 
+void ParticleSystem::InitImgui() {
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 6;
+	style.SeparatorTextAlign.x = 0.5f;
+	style.WindowTitleAlign.x = 0.5f;
+	style.WindowMenuButtonPosition = ImGuiDir_Right;
+
+	ImGui_ImplGlfw_InitForOpenGL(window.context, false);
+	ImGui_ImplOpenGL3_Init("#version 460");
+}
+
 void ParticleSystem::SetGlfwCallbacks() {
 	glfwSetWindowUserPointer(window.context, &callbacks);
 
@@ -80,6 +100,8 @@ void ParticleSystem::SetGlfwCallbacks() {
 		static EventCallbacks* callbacks = (EventCallbacks*)glfwGetWindowUserPointer(window);
 		callbacks->onFramebufferSize(width, height);
 	});
+
+	ImGui_ImplGlfw_InstallCallbacks(window.context);
 }
 
 void ParticleSystem::SetEventCallbacks()
