@@ -4,6 +4,7 @@
 void ParticlesControleur::Init(size_t nbParticles, const VBO& glPosBuffer) {
 	this->nbParticles = nbParticles;
     program.Load("shaders/particleCS.glsl");
+    infoBuffer.Gen(0, sizeof(ParticlesInfo), GL_DYNAMIC_DRAW);
     velocityBuffer.Gen(0, nbParticles * sizeof(GLfloat) * 3);
     float* data = (float*)velocityBuffer.Map(GL_WRITE_ONLY); //need to find a better system
     for (size_t n = 0; n < nbParticles * 3; n++)
@@ -11,22 +12,32 @@ void ParticlesControleur::Init(size_t nbParticles, const VBO& glPosBuffer) {
     velocityBuffer.Unmap();
     glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, glPosBuffer.ID, 0, nbParticles * sizeof(GLfloat) * 3);
     glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, velocityBuffer.ID, 0, nbParticles * sizeof(GLfloat) * 3);
+    program.BindBlock("info", 0);
+    program.SetBlockBuffer(0, infoBuffer);
 }
 
 void ParticlesControleur::Stop() {
-
+    infoBuffer.Delete();
+    velocityBuffer.Delete();
 }
 
 void ParticlesControleur::Compute() {
     program.Activate();
-    glDispatchCompute(nbParticles / 32, 1, 1);
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+    glDispatchCompute((GLuint)(nbParticles / 32), 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 void ParticlesControleur::UpdateInfo(const ParticlesInfo& info) {
+    glNamedBufferSubData(infoBuffer.ID, 0, sizeof(ParticlesInfo), &info);
 }
 
 void ParticlesControleur::ResetVelocity() {
+    velocityBuffer.Delete();
+    velocityBuffer.Gen(0, nbParticles * sizeof(GLfloat) * 3);
+    void* data = (float*)velocityBuffer.Map(GL_WRITE_ONLY); //need to find a better system
+    memset(data, 0, nbParticles * sizeof(GLfloat) * 3);
+    velocityBuffer.Unmap();
+    glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, velocityBuffer.ID, 0, nbParticles * sizeof(GLfloat) * 3);
 }
 
 
@@ -60,6 +71,15 @@ void ComputeShader::Load(const std::string& fileName) {
 void ComputeShader::Activate() {
 	glUseProgram(ID);
 }
+
+void ComputeShader::BindBlock(const char* name, GLuint bindIndex) {
+    glUniformBlockBinding(ID, glGetUniformBlockIndex(ID, name), bindIndex);
+}
+
+void ComputeShader::SetBlockBuffer(GLuint bindIndex, VBO &buffer) {
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, buffer.ID);
+}
+
 /*
 ComputeShader& ComputeShader::operator=(ComputeShader&& shader) noexcept {
 	*this = std::move(shader);

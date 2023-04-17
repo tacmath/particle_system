@@ -41,6 +41,7 @@ void ParticleSystem::Run()
 void ParticleSystem::Stop()
 {
 	particles.Stop();
+	particlesPos.Delete();
 	shader.Delete();
 }
 

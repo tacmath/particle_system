@@ -12,7 +12,7 @@
 
 struct ParticlesInfo {
 	GLfloat		center[3];
-	GLint		hasGravity;
+	GLboolean	hasGravity;
 
 	void SetCenter(const glm::vec3& _center) {
 		center[0] = _center.x;
@@ -30,6 +30,8 @@ public:
 	void Load(const std::string& fileName);
 	void Activate();
 
+	void BindBlock(const char* name, GLuint bindIndex);
+	void SetBlockBuffer(GLuint bindIndex, VBO& buffer);
 //	ComputeShader& operator=(ComputeShader&& shader) noexcept;
 
 private:
@@ -40,6 +42,7 @@ private:
 class ParticlesControleur {
 	size_t				nbParticles;
 	VBO					velocityBuffer;
+	VBO					infoBuffer;
 	ComputeShader		program;
 
 

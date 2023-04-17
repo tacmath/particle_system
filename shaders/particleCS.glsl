@@ -8,17 +8,25 @@ layout(std430, binding = 1) buffer velBuffer {
     float [][3] velocity;
 };
 
+layout(std140) uniform info {
+    vec3 center;
+    bool hasGravity;
+};
+
 const float DT = 0.03;
 
 void main() {
     uint id = gl_GlobalInvocationID.x;
     vec3 pos = vec3( posision[id][0],  posision[id][1],  posision[id][2]);
     vec3 vel = vec3( velocity[id][0],  velocity[id][1],  velocity[id][2]);
-
-    vel += DT * normalize(vec3(0) - pos);
-	pos += DT * vel;
-
     
+    if (hasGravity) {
+        vel += DT * normalize(center - pos);
+    }
+
+	pos += DT * vel;
+    
+
     posision[id][0] = pos.x;
     posision[id][1] = pos.y;
     posision[id][2] = pos.z;
