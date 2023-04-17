@@ -70,4 +70,7 @@ private:
 	void SetGlfwCallbacks();
 	void SetEventCallbacks();
 	void GetEvents();
+	void DrawMenu();
+
+	void UpdateCursorMode();
 };
