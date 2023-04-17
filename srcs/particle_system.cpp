@@ -1,7 +1,9 @@
 #include "particle_system.hpp"
 
-void ParticleSystem::Start()
+void ParticleSystem::Start(uint32_t nbParticles)
 {
+	this->nbParticles = nbParticles;
+
 	info.SetCenter(glm::vec3(0));
 	info.hasGravity = false;
 
@@ -9,7 +11,7 @@ void ParticleSystem::Start()
 	colors.Init({ {1, 0, 0}, {1, 1, 0}, {0, 1, 1}, {0, 0, 1} });
 
 	InitGl();
-	particles.Init(NB_PARTICLE, particlesPos);
+	particles.Init(nbParticles, particlesPos);
 	SetGlfwCallbacks();
 	SetEventCallbacks();
 }
@@ -30,7 +32,7 @@ void ParticleSystem::Run()
 
 		shader.Activate();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArrays(GL_POINTS, 0, NB_PARTICLE);
+		glDrawArrays(GL_POINTS, 0, nbParticles);
 
 		utils::showFPS(window.context);
 
@@ -47,9 +49,9 @@ void ParticleSystem::Stop()
 
 void ParticleSystem::InitGl()
 {
-	particlesPos.Gen(0, sizeof(GLfloat) * 3 * NB_PARTICLE);
+	particlesPos.Gen(0, sizeof(GLfloat) * 3 * nbParticles);
 
-	utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
+	utils::InitParticles(particlesPos, nbParticles, isSphere);
 
 	vao.Gen();
 	vao.LinkAttrib(particlesPos, 0, 3, GL_FLOAT, sizeof(GLfloat), 0);
@@ -102,7 +104,7 @@ void ParticleSystem::SetEventCallbacks()
 			info.hasGravity = (info.hasGravity) ? false : true;
 		if (key == GLFW_KEY_R && action == GLFW_PRESS) {
 			isSphere = !isSphere;
-			utils::InitParticles(particlesPos, NB_PARTICLE, isSphere);
+			utils::InitParticles(particlesPos, nbParticles, isSphere);
 		}
 		if (key == GLFW_KEY_V && action == GLFW_PRESS)
 			particles.ResetVelocity();

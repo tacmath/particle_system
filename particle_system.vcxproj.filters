@@ -68,6 +68,9 @@
     <ClCompile Include="srcs\VAO.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="srcs\opencl_particles_controleur.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
     <ClCompile Include="srcs\opengl_particles_controleur.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>

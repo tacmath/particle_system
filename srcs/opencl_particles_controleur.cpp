@@ -1,3 +1,5 @@
+#ifndef USE_COMPUTE_SHADER
+
 #include "opencl_particles_controleur.hpp"
 
 cl::Program::Sources openclUtils::GetSources(const std::vector<std::string>& files) {
@@ -33,7 +35,7 @@ bool openclUtils::IsCLExtensionSupported(const cl::Device& device, const char* e
 
 
 
-void ParticlesControleur::Init(size_t nbParticles, const VBO& glPosBuffer) {
+void ParticlesControleur::Init(uint32_t nbParticles, const VBO& glPosBuffer) {
 	this->nbParticles = nbParticles;
 	glFinish();
 	InitCL();
@@ -122,3 +124,5 @@ void ParticlesControleur::CreateKernel(const VBO& glPosBuffer) {
 
 	clQueue.enqueueFillBuffer(velBuffer, 0, 0, 3 * sizeof(float) * nbParticles);
 }
+
+#endif // !USE_COMPUTE_SHADER

@@ -39,7 +39,7 @@ struct ParticlesInfo {
 };
 
 class ParticlesControleur {
-	size_t				nbParticles;
+	uint32_t			nbParticles;
 	cl::Device			device;
 	cl::Context			clContext;
 	cl::CommandQueue	clQueue;
@@ -49,7 +49,7 @@ class ParticlesControleur {
 	std::vector<cl::Memory> GLObjects;
 
 public:
-	void Init(size_t nbParticles, const VBO& glPosBuffer);
+	void Init(uint32_t nbParticles, const VBO& glPosBuffer);
 	void Stop();
 	void Compute();
 	void UpdateInfo(const ParticlesInfo& info);

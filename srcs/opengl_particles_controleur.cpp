@@ -1,7 +1,9 @@
+#ifdef USE_COMPUTE_SHADER
+
 #include "opengl_particles_controleur.hpp"
 
 
-void ParticlesControleur::Init(size_t nbParticles, const VBO& glPosBuffer) {
+void ParticlesControleur::Init(uint32_t nbParticles, const VBO& glPosBuffer) {
 	this->nbParticles = nbParticles;
     program.Load("shaders/particleCS.glsl");
     infoBuffer.Gen(0, sizeof(ParticlesInfo), GL_DYNAMIC_DRAW);
@@ -125,3 +127,5 @@ void ComputeShader::compileErrors(unsigned int shader, const char* type) {
         std::cout << "SHADER_COMPILATION_ERROR for:" << type << "\n" << infoLog << std::endl;
     }
 }
+
+#endif

@@ -40,14 +40,14 @@ private:
 };
 
 class ParticlesControleur {
-	size_t				nbParticles;
+	uint32_t			nbParticles;
 	VBO					velocityBuffer;
 	VBO					infoBuffer;
 	ComputeShader		program;
 
 
 public:
-	void Init(size_t nbParticles, const VBO& glPosBuffer);
+	void Init(uint32_t nbParticles, const VBO& glPosBuffer);
 	void Stop();
 	void Compute();
 	void UpdateInfo(const ParticlesInfo& info);

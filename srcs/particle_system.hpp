@@ -4,8 +4,13 @@
 	#define _ASSERT(assertion) if (!(assertion)) std::cout << "Assertion failed" << std::endl; exit(1)
 #endif
 
-
+#ifdef USE_COMPUTE_SHADER
 #include "opengl_particles_controleur.hpp"
+#else
+#include "opencl_particles_controleur.hpp"
+#endif
+
+
 #include <vector>
 #include <iostream>
 #include "utils.hpp"
@@ -16,8 +21,6 @@
 #include "camera.h"
 #include <functional>
 
-
-#define NB_PARTICLE 1000000
 
 struct EventCallbacks {
 	std::function<void(double mouseX, double mouseY)>					onMouseMouvement;
@@ -46,6 +49,7 @@ class ParticleSystem {
 	Shader	shader;
 
 	//other
+	uint32_t		nbParticles = 0;
 	ParticlesInfo	info;
 	EventCallbacks  callbacks;
 	bool			freeCursor = false;
@@ -53,7 +57,7 @@ class ParticleSystem {
 	bool			isRunning = false;
 
 public:
-	void Start();
+	void Start(uint32_t nbParticles);
 	void Run();
 	void Stop();
 private:
