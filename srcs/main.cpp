@@ -64,7 +64,7 @@ int main(int ac, char **av) {
 
     if (ac > 1) {
         if (atoi(av[1]) <=0)
-            std::cout << "Invalid Argument" << std::endl;
+            std::cout << "Invalid Argument : particles must be more than 0" << std::endl;
         else
             nbParticles = atoi(av[1]);
     }

@@ -20,7 +20,9 @@
 #include "shader.h"
 #include "camera.h"
 #include <functional>
-
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+#include <imgui.h>
 
 struct EventCallbacks {
 	std::function<void(double mouseX, double mouseY)>					onMouseMouvement;
@@ -32,6 +34,18 @@ struct EventCallbacks {
 		onMouseMouvement =	[](double, double){};
 		onKey =				[](int, int, int, int) {};
 		onFramebufferSize =	[](int, int) {};
+	}
+};
+
+struct ParticlesOptions {
+	glm::vec3	centerColor;
+	GLfloat		centerSize;
+	GLfloat		particleSize;
+
+	ParticlesOptions() {
+		centerColor = glm::vec3(1);
+		centerSize = 1.0f;
+		particleSize = 1.0f;
 	}
 };
 
@@ -51,8 +65,10 @@ class ParticleSystem {
 	//other
 	uint32_t		nbParticles = 0;
 	ParticlesInfo	info;
+	ParticlesOptions options;
 	EventCallbacks  callbacks;
 	bool			freeCursor = false;
+	bool			inMenu = false;
 	bool			isSphere = true;
 	bool			isRunning = false;
 
@@ -62,8 +78,12 @@ public:
 	void Stop();
 private:
 	void InitGl();
+	void InitImgui();
 
 	void SetGlfwCallbacks();
 	void SetEventCallbacks();
 	void GetEvents();
+	void DrawMenu();
+
+	void UpdateCursorMode();
 };

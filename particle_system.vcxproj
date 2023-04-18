@@ -46,6 +46,12 @@
     <ClInclude Include="srcs\window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="E:\Projet\minecraft\libraries\imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="srcs\camera.cpp" />
     <ClCompile Include="srcs\glad.c" />
     <ClCompile Include="srcs\main.cpp" />
@@ -155,13 +161,25 @@
     <IncludePath>./libs\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='openGL|x64'">
-    <IncludePath>./libs\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/imgui;./libs\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='openCL|x64'">
-    <IncludePath>./libs\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/imgui;./libs\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>./libs\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/imgui;./libs\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='openCL|Win32'">
+    <IncludePath>$(ProjectDir)/imgui;$(ProjectDir)/imgui;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='openGL|Win32'">
+    <IncludePath>$(ProjectDir)/imgui;$(ProjectDir)/imgui;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(ProjectDir)/imgui;$(ProjectDir)/imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -179,7 +197,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_COMPUTE_SHADER;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>

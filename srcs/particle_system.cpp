@@ -11,6 +11,7 @@ void ParticleSystem::Start(uint32_t nbParticles)
 	colors.Init({ {1, 0, 0}, {1, 1, 0}, {0, 1, 1}, {0, 0, 1} });
 
 	InitGl();
+	InitImgui();
 	particles.Init(nbParticles, particlesPos);
 	SetGlfwCallbacks();
 	SetEventCallbacks();
@@ -34,6 +35,7 @@ void ParticleSystem::Run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDrawArrays(GL_POINTS, 0, nbParticles);
 
+		DrawMenu();
 		utils::showFPS(window.context);
 
 		glfwSwapBuffers(window.context);
@@ -60,7 +62,25 @@ void ParticleSystem::InitGl()
 	shader.Activate();
 	vao.Bind();
 	glEnable(GL_DEPTH_TEST);
-//	glPointSize(1.5);
+}
+
+void ParticleSystem::InitImgui() {
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 6;
+	style.SeparatorTextAlign.x = 0.5f;
+	style.WindowTitleAlign.x = 0.5f;
+	style.WindowMenuButtonPosition = ImGuiDir_Right;
+
+	ImGui_ImplGlfw_InitForOpenGL(window.context, false);
+	ImGui_ImplOpenGL3_Init("#version 460");
 }
 
 void ParticleSystem::SetGlfwCallbacks() {
@@ -80,6 +100,8 @@ void ParticleSystem::SetGlfwCallbacks() {
 		static EventCallbacks* callbacks = (EventCallbacks*)glfwGetWindowUserPointer(window);
 		callbacks->onFramebufferSize(width, height);
 	});
+
+	ImGui_ImplGlfw_InstallCallbacks(window.context);
 }
 
 void ParticleSystem::SetEventCallbacks()
@@ -87,8 +109,8 @@ void ParticleSystem::SetEventCallbacks()
 	callbacks.onMouseMouvement = [&](double mouseX, double mouseY){
 		static double lastMouseX = DEFAULT_WINDOW_WIDTH / 2;
 		static double lastMouseY = DEFAULT_WINDOW_HEIGHT / 2;
-		
-		if (!freeCursor) {
+
+		if (!freeCursor && !inMenu) {
 			camera.Rotate((float)(mouseX - lastMouseX) * 0.5f, (float)(mouseY - lastMouseY) * 0.5f);
 			camera.Update();
 			shader.setMat4("VP", camera.projection * camera.view);
@@ -111,17 +133,18 @@ void ParticleSystem::SetEventCallbacks()
 
 		if (key == GLFW_KEY_LEFT_ALT) {
 			if (action == GLFW_PRESS) {
-				int width, height;
-				glfwSetInputMode(window.context, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-				glfwGetWindowSize(window.context, &width, &height);
-				glfwSetCursorPos(window.context, width / 2.0, height / 2.0);
 				freeCursor = true;
-				callbacks.onMouseMouvement(width / 2.0, height / 2.0);
+				UpdateCursorMode();
 			}
 			else if (action == GLFW_RELEASE) {
-				glfwSetInputMode(window.context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 				freeCursor = false;
+				UpdateCursorMode();
 			}
+		}
+
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+			inMenu = !inMenu;
+			UpdateCursorMode();
 		}
 	};
 
@@ -134,7 +157,7 @@ void ParticleSystem::SetEventCallbacks()
 
 void ParticleSystem::GetEvents() {
 	glfwPollEvents();
-	if (glfwWindowShouldClose(window.context) == 1 || glfwGetKey(window.context, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (glfwWindowShouldClose(window.context) == 1)
 		isRunning = false;
 
 	glm::vec3 velocity(0);
@@ -166,5 +189,104 @@ void ParticleSystem::GetEvents() {
 		glm::vec3 point = (glm::vec3(invVP * screenPoint) * 2.0f) + camera.GetPosition();
 		info.SetCenter(point);
 		shader.setVec3("center", point);
+	}
+}
+
+void ParticleSystem::DrawMenu() {
+	static bool resuming = false;
+
+	if (!inMenu)
+		return;
+
+	if (resuming) {
+		inMenu = false;
+		UpdateCursorMode();
+		resuming = false;
+		return;
+	}
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::Begin("Menu", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+
+	ImVec2 buttonSize;
+	const char* label;
+
+	buttonSize.x = ImGui::GetWindowWidth() - 2 * ImGui::GetStyle().WindowPadding.x;
+	buttonSize.y = 0;
+
+	if (ImGui::ColorEdit3("Center color", (float*)&options.centerColor))
+		shader.setVec3("centerColor", options.centerColor);
+
+	glm::vec3 center = info.GetCenter();
+	if (ImGui::InputFloat3("Center Pos", (float*)&center)) {
+		shader.setVec3("center", center);
+		info.SetCenter(center);
+	}
+
+	ImGui::PushItemWidth(buttonSize.x);
+	if (ImGui::SliderFloat("##center size", &options.centerSize, 0.0f, 10.0f, "Center Size %.2f"))
+		shader.setFloat("centerSize", options.centerSize);
+
+	if (ImGui::SliderFloat("##particle size", &options.particleSize, 1.0f, 5.0f, "Particle Size %.0f"))
+		glPointSize(options.particleSize);
+
+	if (ImGui::CollapsingHeader("Particle Colors")) {
+		ImGui::SliderFloat("##color change time", &colors.changeTime, 0.5f, 10.0f, "Change time %.2fs");
+		int n = 0;
+		std::string label;
+		for (const glm::vec3& color : colors.GetColors()) {
+			label = "##color" + std::to_string(n);
+			ImGui::ColorEdit3(label.c_str(), (float*)&color);
+			n++;
+		}
+		if (ImGui::Button("Add New Color", buttonSize))
+			colors.Add(glm::vec3(1.0f));
+		ImGui::NewLine();
+	}
+	ImGui::PopItemWidth();
+	
+
+	if (ImGui::Button("Reset Velocity", buttonSize))
+		particles.ResetVelocity();
+
+	label = (info.hasGravity) ? "Gravity On" : "Gravity Off";
+	if (ImGui::Button(label, buttonSize))
+		info.hasGravity = (info.hasGravity) ? false : true;
+
+	label = (isSphere) ? "Sphere" : "Cube";
+	if (ImGui::Button(label, buttonSize)) {
+		isSphere = !isSphere;
+		utils::InitParticles(particlesPos, nbParticles, isSphere);
+	}
+
+	if (ImGui::Button("Resume", buttonSize))
+		resuming = true;
+
+	if (ImGui::Button("Exit", buttonSize))
+		isRunning = false;
+
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void ParticleSystem::UpdateCursorMode() {
+	static int currentMode = GLFW_CURSOR_DISABLED;
+
+	if ((freeCursor || inMenu) && currentMode == GLFW_CURSOR_DISABLED) {
+		int width, height;
+		glfwSetInputMode(window.context, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwGetWindowSize(window.context, &width, &height);
+		glfwSetCursorPos(window.context, width / 2.0, height / 2.0);
+		callbacks.onMouseMouvement(width / 2.0, height / 2.0);
+		currentMode = GLFW_CURSOR_NORMAL;
+	}
+	else if (!freeCursor && !inMenu) {
+		glfwSetInputMode(window.context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		currentMode = GLFW_CURSOR_DISABLED;
 	}
 }

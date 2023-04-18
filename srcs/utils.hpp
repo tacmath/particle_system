@@ -23,7 +23,11 @@ namespace utils {
 		unsigned				currentIndex;
 		float					lastColorChange;
 	public:
+		float					changeTime;
+
 		void Update();
+		const std::vector<glm::vec3>& GetColors();
+		void SetColors(const std::vector<glm::vec3>& colors);
 		void Add(const glm::vec3& color);
 		void Init(const std::vector<glm::vec3>& colorList);
 		const glm::vec3& GetCurrent();
