@@ -90,14 +90,18 @@ void ParticlesControleur::InitCL() {
 		exit(1);
 	}
 
+	#ifndef _WIN32
+		GLFWwindow* glfwContext = glfwGetCurrentContext();
+	#endif
+
 	cl_context_properties context_properties[] =
 	{
 		#ifdef _WIN32
 		CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
 		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
 		#else
-		CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window.context),
-		CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetGLXWindow(window.context),
+		CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(glfwContext),
+		CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetGLXWindow(glfwContext),
 		#endif
 		CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()),
 		0

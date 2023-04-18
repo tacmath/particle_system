@@ -6,6 +6,7 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <cstring>
 #include <glm/vec3.hpp>
 #include "VBO.h"
 

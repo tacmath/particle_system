@@ -1,9 +1,5 @@
 #pragma once
 
-#ifndef _ASSERT
-	#define _ASSERT(assertion) if (!(assertion)) std::cout << "Assertion failed" << std::endl; exit(1)
-#endif
-
 #ifdef USE_COMPUTE_SHADER
 #include "opengl_particles_controleur.hpp"
 #else

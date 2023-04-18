@@ -79,7 +79,7 @@ void ComputeShader::BindBlock(const char* name, GLuint bindIndex) {
 }
 
 void ComputeShader::SetBlockBuffer(GLuint bindIndex, VBO &buffer) {
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, buffer.ID);
+    glBindBufferBase(GL_UNIFORM_BUFFER, bindIndex, buffer.ID);
 }
 
 /*

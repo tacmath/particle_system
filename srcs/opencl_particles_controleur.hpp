@@ -7,6 +7,9 @@
 #include <Windows.h>
 #endif
 
+#ifndef _ASSERT
+	#define _ASSERT(assertion) if (!(assertion)) std::cout << "Assertion failed" << std::endl; exit(1)
+#endif
 
 #include <vector>
 #include <iostream>
@@ -18,6 +21,7 @@
 
 #ifndef _WIN32
 #define GLFW_EXPOSE_NATIVE_GLX
+#include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #endif
 
@@ -38,7 +42,7 @@ struct ParticlesInfo {
 	}
 
 	glm::vec3 GetCenter() {
-		return glm::vec3(center.x , center.y, center.z);
+		return glm::vec3(center.s[0] , center.s[1], center.s[2]);
 	}
 };
 
