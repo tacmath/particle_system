@@ -233,7 +233,21 @@ void ParticleSystem::DrawMenu() {
 	if (ImGui::SliderFloat("##particle size", &options.particleSize, 1.0f, 5.0f, "Particle Size %.0f"))
 		glPointSize(options.particleSize);
 
+	if (ImGui::CollapsingHeader("Particle Colors")) {
+		ImGui::SliderFloat("##color change time", &colors.changeTime, 0.5f, 10.0f, "Change time %.2fs");
+		int n = 0;
+		std::string label;
+		for (const glm::vec3& color : colors.GetColors()) {
+			label = "##color" + std::to_string(n);
+			ImGui::ColorEdit3(label.c_str(), (float*)&color);
+			n++;
+		}
+		if (ImGui::Button("Add New Color", buttonSize))
+			colors.Add(glm::vec3(1.0f));
+		ImGui::NewLine();
+	}
 	ImGui::PopItemWidth();
+	
 
 	if (ImGui::Button("Reset Velocity", buttonSize))
 		particles.ResetVelocity();

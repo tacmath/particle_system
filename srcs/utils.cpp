@@ -53,7 +53,7 @@ void utils::showFPS(GLFWwindow* window) {
 }
 
 void utils::ColorList::Update() {
-	float factor = ((float)glfwGetTime() - lastColorChange) / TIME_PER_COLOR;
+	float factor = ((float)glfwGetTime() - lastColorChange) / changeTime;
 	glm::vec3 current, next;
 
 	if (factor > 1.0f) {
@@ -67,6 +67,16 @@ void utils::ColorList::Update() {
 	currentColor = current * (1 - factor) + next * factor;
 }
 
+const std::vector<glm::vec3>& utils::ColorList::GetColors() {
+	return colors;
+}
+
+void utils::ColorList::SetColors(const std::vector<glm::vec3>& colors) {
+	this->colors = colors;
+	if (colors.size() <= currentIndex)
+		currentIndex = 0;
+}
+
 void utils::ColorList::Add(const glm::vec3& color) {
 	colors.push_back(color);
 }
@@ -75,6 +85,7 @@ void utils::ColorList::Init(const std::vector<glm::vec3>& colorList) {
 	colors = colorList;
 	currentColor = colorList[0];
 	currentIndex = 0;
+	changeTime = TIME_PER_COLOR;
 	lastColorChange = (float)glfwGetTime();
 }
 
