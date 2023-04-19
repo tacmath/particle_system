@@ -83,4 +83,4 @@ then
 fi
 
 
-install_libs libglfw ocl-icd
+install_libs libglfw ocl-icd opencl-

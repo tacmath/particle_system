@@ -13,7 +13,8 @@
 
 struct ParticlesInfo {
 	GLfloat		center[3];
-	GLboolean	hasGravity;
+	GLint		hasGravity;
+	
 
 	void SetCenter(const glm::vec3& _center) {
 		center[0] = _center.x;
