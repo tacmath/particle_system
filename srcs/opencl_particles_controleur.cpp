@@ -149,6 +149,8 @@ void ParticlesControleur::InitCL() {
 		std::cerr << "Clerror : cl::Platform::get : "  << getClErrorString(error) << std::endl;
 		exit(1);
 	}
+	_ASSERT(platforms.size() > 0);
+	
 	cl::Platform platform = platforms.front();
 
 	std::cout << "Using platform: " << platform.getInfo<CL_PLATFORM_NAME>() << "\n";
