@@ -20,14 +20,18 @@ glm::vec3 utils::GetRandomPointInCube() {
 }
 
 void utils::InitParticles(VBO& buffer, size_t nbParticles, bool sphere) {
-	float* gldata = (float*)buffer.Map(GL_WRITE_ONLY);
+	VBO tmpBuffer;
+	tmpBuffer.Gen(0, nbParticles * sizeof(GLfloat) * 3, GL_STREAM_COPY);
+	float* gldata = (float*)tmpBuffer.Map(GL_WRITE_ONLY);
 	for (size_t n = 0; n < nbParticles; n++) {
 		glm::vec3 point = (sphere) ? GetRandomPointInSphere() : GetRandomPointInCube();
 		gldata[(n * 3)] = point.x;
 		gldata[(n * 3) + 1] = point.y;
 		gldata[(n * 3) + 2] = point.z;
 	}
-	buffer.Unmap();
+	tmpBuffer.Unmap();
+	glCopyNamedBufferSubData(tmpBuffer.ID, buffer.ID, 0, 0, nbParticles * sizeof(GLfloat) * 3);
+	tmpBuffer.Delete();
 }
 
 void utils::showFPS(GLFWwindow* window) {
