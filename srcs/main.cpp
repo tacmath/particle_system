@@ -2,6 +2,8 @@
 
 #define NB_PARTICLE 1000000
 
+#define MAX_PARTICLE 15000000
+
 std::string glStringEnum(GLenum glenum)
 {
     std::string enumString = "NONE";
@@ -68,6 +70,8 @@ int main(int ac, char **av) {
         else
             nbParticles = atoi(av[1]);
     }
+    if (nbParticles > MAX_PARTICLE)
+        nbParticles = MAX_PARTICLE;
     if (nbParticles % 32)
         nbParticles = nbParticles - (nbParticles % 32) + 32;
     std::cout << "Alligned particles number is " << nbParticles << std::endl;
