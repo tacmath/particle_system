@@ -71,7 +71,14 @@ install_libs()
         fi
 
     done
-    cp -rf $DEPENDENCY_FOLDER/usr/include libs/
+}
+
+cpy_libs_include()
+{
+    for include_name in "$@"
+    do
+        cp -rf $DEPENDENCY_FOLDER/usr/include/$include_name ./libs/include
+    done
 }
 
 if [  ! -e $DEPENDENCY_FOLDER ]
@@ -84,3 +91,5 @@ fi
 
 
 install_libs libglfw ocl-icd opencl-
+
+cpy_libs_include GLFW CL
