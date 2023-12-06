@@ -72,8 +72,13 @@ int main(int ac, char **av) {
     }
     if (nbParticles > MAX_PARTICLE)
         nbParticles = MAX_PARTICLE;
-    if (nbParticles % 32)
-        nbParticles = nbParticles - (nbParticles % 32) + 32;
+    if (nbParticles % 64)
+        nbParticles = nbParticles - (nbParticles % 64) + 64;
+    #ifdef USE_COMPUTE_SHADER
+        int workGroupLimit;
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &workGroupLimit);
+	    nbParticles = ((uint32_t)workGroupLimit * 64 > nbParticles) ? nbParticles : (uint32_t)workGroupLimit * 64;
+    #endif
     std::cout << "Alligned particles number is " << nbParticles << std::endl;
     debug();
 	particleSystem.Start(nbParticles);

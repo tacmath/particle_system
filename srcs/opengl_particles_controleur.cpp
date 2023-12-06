@@ -25,7 +25,7 @@ void ParticlesControleur::Stop() {
 
 void ParticlesControleur::Compute() {
     program.Activate();
-    glDispatchCompute((GLuint)(nbParticles / 32), 1, 1);
+    glDispatchCompute((GLuint)(nbParticles / 64), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 

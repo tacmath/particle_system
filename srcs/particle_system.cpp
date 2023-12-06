@@ -107,8 +107,8 @@ void ParticleSystem::SetGlfwCallbacks() {
 void ParticleSystem::SetEventCallbacks()
 {
 	callbacks.onMouseMouvement = [&](double mouseX, double mouseY){
-		static double lastMouseX = DEFAULT_WINDOW_WIDTH / 2;
-		static double lastMouseY = DEFAULT_WINDOW_HEIGHT / 2;
+		static double lastMouseX = mouseX;
+		static double lastMouseY = mouseY;
 
 		if (!freeCursor && !inMenu) {
 			camera.Rotate((float)(mouseX - lastMouseX) * 0.5f, (float)(mouseY - lastMouseY) * 0.5f);
