@@ -30,7 +30,7 @@ CXX = g++
 HEADER= $(INC_PATH)/*.h $(INC_PATH)/*.hpp
 
 #framework
-FRAMEWORK= -ldl `pkg-config --static --libs gl glfw3 OpenCL` -L ~/.dep/usr/lib/x86_64-linux-gnu/
+FRAMEWORK= -ldl `pkg-config --static --libs glfw3 OpenCL` -lGL -L ~/.dep/usr/lib/x86_64-linux-gnu/
 FRAMEWORK_INC = -I libs/include -I $(IMGUI_DIR)
 
 NAME_SRC=	camera.cpp\
@@ -55,7 +55,7 @@ OBJS = $(addprefix $(OBJ_PATH)/,$(OBJ_NAME)) $(addprefix $(OBJ_PATH)/,$(OBJ_NAME
 
 GL_OBJS = $(addprefix $(GL_OBJ_PATH)/,$(GL_OBJ_NAME)) $(addprefix $(OBJ_PATH)/,$(OBJ_NAME_C)) $(addprefix $(OBJ_PATH)/,$(IMGUI_OBJS))
 
-DEBUG_FLAG = -Wall -Wextra
+DEBUG_FLAG = -Wall
 
 CC			= gcc 
 GPP			= g++ -std=c++11 $(DEBUG_FLAG)
@@ -75,7 +75,7 @@ $(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp $(HEADER) Makefile
 	$(GPP) -I $(INC_PATH) $(FRAMEWORK_INC) -c $< -o $@
 
 $(GL_OBJ_PATH)/%GL.o: $(SRC_PATH)/%.cpp $(HEADER) Makefile
-	@mkdir $(GL_OBJ_PATH) 2> /dev/null || true
+	@mkdir -p $(GL_OBJ_PATH) 2> /dev/null || true
 	$(GPP) -D USE_COMPUTE_SHADER -I $(INC_PATH) $(FRAMEWORK_INC) -c $< -o $@
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c $(HEADER) Makefile
