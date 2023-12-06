@@ -3,32 +3,15 @@
 mkdir -p ./libs
 mkdir -p ./libs/include
 
-path=./libs/include/KHR/khrplatform.h
-if [  ! -e $path ]
+path=./libs/include/CL/opencl.hpp
+if [ ! -e $path ]
 then
-    printf '\ninstalling khrplatform\n'
-    mkdir -p ./libs/include/KHR
-    curl -k https://raw.githubusercontent.com/matheme42/glad/master/khrplatform.h > ./libs/include/KHR/khrplatform.h
+    printf '\ndownloading opencl.hpp\n'
+    git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git ./libs/include/.tmp
+    cp -r ./libs/include/.tmp/include/* ./libs/include
+    rm -rf ./libs/include/.tmp
 
 fi
-
-path=./libs/include/glad/glad.h
-if [  ! -e $path ]
-then
-    printf '\ninstalling glad.h\n'
-    mkdir -p ./libs/include/glad
-    curl https://raw.githubusercontent.com/matheme42/glad/master/glad.h > ./libs/include/glad/glad.h
-
-fi
-
-path=./srcs/glad.c
-if [  ! -e $path ]
-then
-    printf '\ninstalling glad.c\n'
-    curl https://raw.githubusercontent.com/matheme42/glad/master/glad.c > ./srcs/glad.c
-
-fi
-
 
 path=./libs/include/glm
 if [ ! -e $path ]
